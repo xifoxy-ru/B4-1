@@ -1,11 +1,19 @@
 AGENTS.md
 AGENTS.local.md
+AGENT.md
+agent.md
+agents.md
 CLAUDE.md
 GEMINI.md
 .agents/
 .codex/
 .claude/
+.cursor/
+.windsurf/
+.github/copilot-instructions.md
+.github/instructions/
 workrecords/
+reports/
 
 .cache/
 coverage/
