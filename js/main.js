@@ -189,7 +189,7 @@ const renderRepositories = () => {
   retryButton.hidden = appState.api.status !== 'error';
 
   const statusMessages = {
-    idle: 'GitHub 사용자 ID가 아직 설정되지 않았습니다. projects 섹션의 data-github-username에 실제 ID를 입력해 주세요.',
+    idle: 'GitHub 계정 정보가 아직 준비되지 않았습니다. 설정 후 공개 저장소가 이곳에 표시됩니다.',
     loading: '공개 저장소를 불러오는 중입니다…',
     empty: '표시할 공개 저장소가 없습니다.',
     error: `공개 저장소를 불러오지 못했습니다. ${appState.api.message}`,
