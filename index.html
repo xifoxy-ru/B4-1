@@ -9,48 +9,111 @@
     <script src="js/main.js" defer></script>
   </head>
   <body>
+    <a class="skip-link" href="#main-content">본문으로 건너뛰기</a>
+
     <header class="site-header">
-      <a class="site-logo" href="#home" aria-label="포트폴리오 홈">Portfolio</a>
-      <nav aria-label="주요 메뉴">
-        <a href="#about">소개</a>
-        <a href="#skills">기술</a>
-        <a href="#projects">프로젝트</a>
-        <a href="#contact">연락</a>
-      </nav>
+      <div class="header-inner">
+        <a class="site-logo" href="#home" aria-label="포트폴리오 홈">
+          <span class="logo-mark" aria-hidden="true">P</span>
+          <span>Portfolio</span>
+        </a>
+
+        <nav class="primary-nav" aria-label="주요 메뉴">
+          <a href="#about">소개</a>
+          <a href="#skills">기술</a>
+          <a href="#projects">프로젝트</a>
+          <a href="#contact">연락</a>
+        </nav>
+
+        <button class="theme-toggle" type="button" aria-label="어두운 테마로 전환" aria-pressed="false">
+          <span class="theme-icon" aria-hidden="true">◐</span>
+          <span class="theme-label">테마</span>
+        </button>
+      </div>
     </header>
 
     <main id="main-content">
-      <section id="home" aria-labelledby="home-title">
-        <p>Temporary portfolio</p>
-        <h1 id="home-title">내용을 준비하고 있습니다.</h1>
+      <section class="hero" id="home" aria-labelledby="home-title">
+        <div class="hero-copy">
+          <p class="eyebrow">Temporary portfolio · Local demo</p>
+          <h1 id="home-title">배우고 만들며,<br><span>기록하는 사람</span></h1>
+          <p class="hero-description">이름과 소개는 실제 정보가 준비될 때까지 임시 문구로 표시됩니다. 작지만 분명한 경험을 차근차근 만들고 있습니다.</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#projects">프로젝트 보기</a>
+            <a class="button button-secondary" href="#contact">연락 영역 보기</a>
+          </div>
+        </div>
+
+        <div class="profile-placeholder" role="img" aria-label="실제 프로필 이미지가 준비되기 전 사용하는 추상 도형 일러스트">
+          <span class="shape shape-back" aria-hidden="true"></span>
+          <span class="shape shape-middle" aria-hidden="true"></span>
+          <span class="shape shape-front" aria-hidden="true">P</span>
+        </div>
       </section>
 
-      <section id="about" aria-labelledby="about-title">
-        <h2 id="about-title">소개</h2>
-        <p>사용자 정보가 확정되면 소개 문구가 교체됩니다.</p>
+      <section class="section" id="about" aria-labelledby="about-title">
+        <div class="section-heading">
+          <p class="eyebrow">About</p>
+          <h2 id="about-title">소개</h2>
+        </div>
+        <div class="content-panel">
+          <p>현재 포트폴리오의 문구는 모두 임시 콘텐츠입니다. 실제 경험과 목표가 정리되면 이 영역을 사용자 이야기로 교체합니다.</p>
+        </div>
       </section>
 
-      <section id="skills" aria-labelledby="skills-title">
-        <h2 id="skills-title">기술</h2>
-        <p>학습 내용과 기술 목록을 준비하고 있습니다.</p>
+      <section class="section" id="skills" aria-labelledby="skills-title">
+        <div class="section-heading">
+          <p class="eyebrow">Skills</p>
+          <h2 id="skills-title">기술</h2>
+        </div>
+        <div class="card-grid">
+          <article class="card">
+            <p class="card-number" aria-hidden="true">01</p>
+            <h3>기초 다지기</h3>
+            <p>학습 내용과 기술 목록을 준비하고 있습니다.</p>
+          </article>
+          <article class="card">
+            <p class="card-number" aria-hidden="true">02</p>
+            <h3>작게 만들기</h3>
+            <p>간단한 결과부터 완성하며 경험을 쌓고 있습니다.</p>
+          </article>
+          <article class="card">
+            <p class="card-number" aria-hidden="true">03</p>
+            <h3>꾸준히 개선하기</h3>
+            <p>피드백과 점검을 바탕으로 내용을 다듬을 예정입니다.</p>
+          </article>
+        </div>
       </section>
 
-      <section id="projects" aria-labelledby="projects-title">
-        <h2 id="projects-title">프로젝트</h2>
-        <article>
-          <h3>프로젝트 준비 중</h3>
-          <p>실제 프로젝트 정보가 제공되면 이 영역에 표시됩니다.</p>
+      <section class="section" id="projects" aria-labelledby="projects-title">
+        <div class="section-heading">
+          <p class="eyebrow">Projects</p>
+          <h2 id="projects-title">프로젝트</h2>
+        </div>
+        <article class="project-placeholder">
+          <div>
+            <p class="project-tag">Content pending</p>
+            <h3>실제 프로젝트 정보를 기다리고 있습니다.</h3>
+            <p>제목, 설명, 링크가 제공되면 이 임시 카드는 실제 작업으로 교체됩니다.</p>
+          </div>
+          <span aria-hidden="true">↗</span>
         </article>
       </section>
 
-      <section id="contact" aria-labelledby="contact-title">
-        <h2 id="contact-title">연락</h2>
-        <p>로컬 데모 문의 양식을 준비하고 있습니다.</p>
+      <section class="section" id="contact" aria-labelledby="contact-title">
+        <div class="section-heading">
+          <p class="eyebrow">Contact</p>
+          <h2 id="contact-title">연락</h2>
+        </div>
+        <div class="content-panel">
+          <p>연락처를 공개하지 않는 로컬 데모입니다. 문의 양식은 다음 구현 단계에서 추가됩니다.</p>
+        </div>
       </section>
     </main>
 
-    <footer>
+    <footer class="site-footer">
       <p>임시 포트폴리오 · 로컬 데모</p>
+      <a href="#home">맨 위로</a>
     </footer>
   </body>
 </html>
