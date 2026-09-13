@@ -18,17 +18,24 @@
           <span>Portfolio</span>
         </a>
 
-        <nav class="primary-nav" aria-label="주요 메뉴">
+        <nav class="primary-nav" id="primary-nav" aria-label="주요 메뉴" data-open="false">
           <a href="#about">소개</a>
           <a href="#skills">기술</a>
           <a href="#projects">프로젝트</a>
           <a href="#contact">연락</a>
         </nav>
 
-        <button class="theme-toggle" type="button" aria-label="어두운 테마로 전환" aria-pressed="false">
-          <span class="theme-icon" aria-hidden="true">◐</span>
-          <span class="theme-label">테마</span>
-        </button>
+        <div class="header-actions">
+          <button class="theme-toggle" type="button" aria-label="어두운 테마로 전환" aria-pressed="false">
+            <span class="theme-icon" aria-hidden="true">◐</span>
+            <span class="theme-label">테마</span>
+          </button>
+          <button class="menu-toggle" type="button" aria-label="메뉴 열기" aria-expanded="false" aria-controls="primary-nav">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+          </button>
+        </div>
       </div>
     </header>
 
@@ -51,17 +58,21 @@
         </div>
       </section>
 
-      <section class="section" id="about" aria-labelledby="about-title">
+      <section class="section reveal-target" id="about" aria-labelledby="about-title">
         <div class="section-heading">
           <p class="eyebrow">About</p>
           <h2 id="about-title">소개</h2>
         </div>
-        <div class="content-panel">
-          <p>현재 포트폴리오의 문구는 모두 임시 콘텐츠입니다. 실제 경험과 목표가 정리되면 이 영역을 사용자 이야기로 교체합니다.</p>
+        <div class="content-panel about-panel">
+          <img src="images/profile-placeholder.svg" alt="실제 프로필 사진을 기다리는 임시 추상 프로필 일러스트" width="320" height="320">
+          <div>
+            <h3>소개 문구 준비 중</h3>
+            <p>현재 포트폴리오의 문구와 이미지는 모두 임시 콘텐츠입니다. 실제 경험과 목표가 정리되면 이 영역을 사용자 이야기로 교체합니다.</p>
+          </div>
         </div>
       </section>
 
-      <section class="section" id="skills" aria-labelledby="skills-title">
+      <section class="section reveal-target" id="skills" aria-labelledby="skills-title">
         <div class="section-heading">
           <p class="eyebrow">Skills</p>
           <h2 id="skills-title">기술</h2>
@@ -85,29 +96,59 @@
         </div>
       </section>
 
-      <section class="section" id="projects" aria-labelledby="projects-title">
+      <section class="section reveal-target" id="projects" aria-labelledby="projects-title" data-github-username="">
         <div class="section-heading">
           <p class="eyebrow">Projects</p>
           <h2 id="projects-title">프로젝트</h2>
         </div>
-        <article class="project-placeholder">
-          <div>
-            <p class="project-tag">Content pending</p>
-            <h3>실제 프로젝트 정보를 기다리고 있습니다.</h3>
-            <p>제목, 설명, 링크가 제공되면 이 임시 카드는 실제 작업으로 교체됩니다.</p>
+        <div class="projects-content">
+          <article class="project-placeholder">
+            <div>
+              <p class="project-tag">Content pending</p>
+              <h3>실제 프로젝트 정보를 기다리고 있습니다.</h3>
+              <p>GitHub 사용자 ID를 설정하면 공개 저장소를 최근 업데이트 순으로 최대 100개 표시합니다.</p>
+            </div>
+            <span aria-hidden="true">↗</span>
+          </article>
+          <div class="github-panel" aria-labelledby="github-title">
+            <div class="github-heading">
+              <div>
+                <p class="project-tag">GitHub public repositories</p>
+                <h3 id="github-title">공개 저장소</h3>
+              </div>
+              <button class="retry-button" type="button" hidden>다시 시도</button>
+            </div>
+            <p class="github-status" role="status" aria-live="polite"></p>
+            <div class="repo-grid"></div>
           </div>
-          <span aria-hidden="true">↗</span>
-        </article>
+        </div>
       </section>
 
-      <section class="section" id="contact" aria-labelledby="contact-title">
+      <section class="section reveal-target" id="contact" aria-labelledby="contact-title">
         <div class="section-heading">
           <p class="eyebrow">Contact</p>
           <h2 id="contact-title">연락</h2>
         </div>
-        <div class="content-panel">
-          <p>연락처를 공개하지 않는 로컬 데모입니다. 문의 양식은 다음 구현 단계에서 추가됩니다.</p>
-        </div>
+        <form class="contact-form" novalidate>
+          <p class="form-note">입력 내용은 어디에도 전송되거나 저장되지 않는 로컬 데모입니다.</p>
+          <div class="form-field">
+            <label for="contact-name">이름 <span aria-hidden="true">*</span></label>
+            <input id="contact-name" name="name" type="text" autocomplete="name" required aria-describedby="name-error">
+            <span class="field-error" id="name-error" data-error-for="name"></span>
+          </div>
+          <div class="form-field">
+            <label for="contact-email">이메일 <span aria-hidden="true">*</span></label>
+            <input id="contact-email" name="email" type="email" autocomplete="email" required aria-describedby="email-error">
+            <span class="field-error" id="email-error" data-error-for="email"></span>
+          </div>
+          <div class="form-field">
+            <label for="contact-message">메시지 <span aria-hidden="true">*</span></label>
+            <textarea id="contact-message" name="message" rows="6" required aria-describedby="message-error"></textarea>
+            <span class="field-error" id="message-error" data-error-for="message"></span>
+          </div>
+          <button class="button button-primary" type="submit">로컬 데모 확인</button>
+          <p class="form-result" role="status" aria-live="polite"></p>
+        </form>
       </section>
     </main>
 
@@ -115,5 +156,7 @@
       <p>임시 포트폴리오 · 로컬 데모</p>
       <a href="#home">맨 위로</a>
     </footer>
+
+    <button class="top-button" type="button" aria-label="페이지 맨 위로 이동" hidden>↑</button>
   </body>
 </html>
