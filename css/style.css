@@ -484,11 +484,13 @@ h3 {
 
 .projects-content {
   display: grid;
+  min-width: 0;
   gap: 1.25rem;
 }
 
 .github-panel,
 .contact-form {
+  min-width: 0;
   padding: clamp(1.4rem, 5vw, 2.5rem);
   border: 1px solid var(--line);
   border-radius: var(--radius-medium);
@@ -498,6 +500,7 @@ h3 {
 
 .github-heading {
   display: flex;
+  min-width: 0;
   align-items: start;
   justify-content: space-between;
   gap: 1rem;
@@ -522,11 +525,13 @@ h3 {
 
 .repo-grid {
   display: grid;
+  min-width: 0;
   gap: 0.8rem;
   margin-top: 1.25rem;
 }
 
 .repo-card {
+  min-width: 0;
   padding: 1.1rem;
   border: 1px solid var(--line);
   border-radius: var(--radius-small);
@@ -580,6 +585,27 @@ h3 {
 
   h1 {
     font-size: clamp(2.25rem, 18vw, 2.7rem);
+  }
+
+  .project-placeholder,
+  .github-panel {
+    padding: 1rem;
+  }
+
+  .project-placeholder,
+  .github-heading {
+    gap: 0.5rem;
+  }
+
+  .project-placeholder > div,
+  .github-heading > div {
+    min-width: 0;
+  }
+
+  .project-tag,
+  .repo-card h4,
+  .repo-card a {
+    overflow-wrap: anywhere;
   }
 }
 
