@@ -415,8 +415,7 @@ h3 {
 }
 
 .content-panel,
-.card,
-.project-placeholder {
+.card {
   border: 1px solid var(--line);
   border-radius: var(--radius-medium);
   background: var(--surface);
@@ -424,7 +423,6 @@ h3 {
 }
 
 .card,
-.project-placeholder,
 .repo-card {
   transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
@@ -447,14 +445,12 @@ h3 {
 }
 
 .content-panel p,
-.card p,
-.project-placeholder p {
+.card p {
   color: var(--muted);
 }
 
 .content-panel p:last-child,
-.card p:last-child,
-.project-placeholder p:last-child {
+.card p:last-child {
   margin-bottom: 0;
 }
 
@@ -472,14 +468,6 @@ h3 {
   color: var(--accent-strong) !important;
   font-size: 0.82rem;
   font-weight: 900;
-}
-
-.project-placeholder {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 1.5rem;
-  padding: clamp(1.5rem, 5vw, 2.5rem);
 }
 
 .projects-content {
@@ -550,7 +538,6 @@ h3 {
   }
 
   .card:hover,
-  .project-placeholder:hover,
   .repo-card:hover {
     border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
     box-shadow: var(--shadow-hover);
@@ -587,17 +574,14 @@ h3 {
     font-size: clamp(2.25rem, 18vw, 2.7rem);
   }
 
-  .project-placeholder,
   .github-panel {
     padding: 1rem;
   }
 
-  .project-placeholder,
   .github-heading {
     gap: 0.5rem;
   }
 
-  .project-placeholder > div,
   .github-heading > div {
     min-width: 0;
   }
@@ -653,7 +637,39 @@ h3 {
 }
 
 .form-field textarea {
+  min-height: 8rem;
+  max-height: 40rem;
   resize: vertical;
+}
+
+.textarea-resize-handle {
+  display: flex;
+  width: 100%;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-small);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  cursor: ns-resize;
+  font-size: 0.86rem;
+  font-weight: 800;
+  line-height: 1.25;
+  text-align: center;
+  touch-action: none;
+  user-select: none;
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.textarea-resize-handle:hover,
+.textarea-resize-handle.is-resizing {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent-soft) 72%, var(--surface));
+  box-shadow: var(--shadow-small);
 }
 
 .form-field [aria-invalid="true"] {
@@ -712,11 +728,6 @@ h3 {
 .js .reveal-target.is-visible {
   opacity: 1;
   transform: translateY(0);
-}
-
-.project-placeholder > span {
-  color: var(--accent-strong);
-  font-size: 2rem;
 }
 
 .project-tag {

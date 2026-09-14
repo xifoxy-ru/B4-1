@@ -5,7 +5,12 @@ document.documentElement.classList.add('js');
 const THEME_KEY = 'b4-1-theme';
 const DARK_THEME = 'dark';
 const LIGHT_THEME = 'light';
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const EMAIL_MAX_LENGTH = 254;
+const EMAIL_LOCAL_MAX_LENGTH = 64;
+const EMAIL_DOMAIN_LABEL_MAX_LENGTH = 63;
+const EMAIL_UNSAFE_CHARACTER_PATTERN = /[\s<>"()[\]\\,;:\u0000-\u001f\u007f]/u;
+const DOMAIN_LABEL_PATTERN = /^[\p{L}\p{N}](?:[\p{L}\p{N}-]*[\p{L}\p{N}])?$/u;
+const DOMAIN_SUFFIX_PATTERN = /^(?:\p{L}{2,}|xn--[a-z0-9-]{2,})$/iu;
 
 const themeToggle = document.querySelector('.theme-toggle');
 const menuToggle = document.querySelector('.menu-toggle');
@@ -18,6 +23,8 @@ const projectsSection = document.querySelector('#projects');
 const githubStatus = document.querySelector('.github-status');
 const repoGrid = document.querySelector('.repo-grid');
 const retryButton = document.querySelector('.retry-button');
+const messageTextarea = document.querySelector('#contact-message');
+const textareaResizeHandle = document.querySelector('.textarea-resize-handle');
 const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const githubUsername = projectsSection?.dataset.githubUsername?.trim() ?? '';
@@ -157,17 +164,130 @@ const scrollToTarget = (target) => {
   target.scrollIntoView({ behavior: reducedMotion.matches ? 'auto' : 'smooth', block: 'start' });
 };
 
+const isPracticalEmail = (value) => {
+  if (value.length > EMAIL_MAX_LENGTH || EMAIL_UNSAFE_CHARACTER_PATTERN.test(value)) {
+    return false;
+  }
+
+  const parts = value.split('@');
+  if (parts.length !== 2) {
+    return false;
+  }
+
+  const [local, domain] = parts;
+  if (!local || !domain || local.length > EMAIL_LOCAL_MAX_LENGTH || local.startsWith('.') || local.endsWith('.') || local.includes('..')) {
+    return false;
+  }
+
+  if (domain.startsWith('.') || domain.endsWith('.') || domain.includes('..')) {
+    return false;
+  }
+
+  const labels = domain.split('.');
+  if (labels.length < 2 || labels.some((label) => label.length > EMAIL_DOMAIN_LABEL_MAX_LENGTH || !DOMAIN_LABEL_PATTERN.test(label))) {
+    return false;
+  }
+
+  return DOMAIN_SUFFIX_PATTERN.test(labels.at(-1));
+};
+
 const fieldMessage = (name, value) => {
   const trimmedValue = value.trim();
   if (!trimmedValue) {
     const prompts = { name: '이름을', email: '이메일을', message: '메시지를' };
     return `${prompts[name]} 입력해 주세요.`;
   }
-  if (name === 'email' && !EMAIL_PATTERN.test(trimmedValue)) {
+  if (name === 'email' && !isPracticalEmail(value)) {
     return '올바른 이메일 형식을 입력해 주세요.';
   }
   return '';
 };
+
+const textareaHeightLimits = () => {
+  if (!messageTextarea) {
+    return { minimum: 0, maximum: 0 };
+  }
+  const styles = window.getComputedStyle(messageTextarea);
+  return {
+    minimum: Number.parseFloat(styles.minHeight) || 0,
+    maximum: Number.parseFloat(styles.maxHeight) || Number.POSITIVE_INFINITY,
+  };
+};
+
+const renderTextareaHeight = (requestedHeight) => {
+  if (!messageTextarea || !textareaResizeHandle) {
+    return;
+  }
+  const { minimum, maximum } = textareaHeightLimits();
+  const height = Math.min(maximum, Math.max(minimum, requestedHeight));
+  messageTextarea.style.height = `${height}px`;
+  textareaResizeHandle.setAttribute('aria-valuemin', String(Math.round(minimum)));
+  textareaResizeHandle.setAttribute('aria-valuemax', String(Math.round(maximum)));
+  textareaResizeHandle.setAttribute('aria-valuenow', String(Math.round(height)));
+  textareaResizeHandle.setAttribute('aria-valuetext', `메시지 입력창 높이 ${Math.round(height)}픽셀`);
+};
+
+let textareaResizeStart = null;
+
+textareaResizeHandle?.addEventListener('pointerdown', (event) => {
+  if (!event.isPrimary || (event.pointerType === 'mouse' && event.button !== 0) || !messageTextarea) {
+    return;
+  }
+  event.preventDefault();
+  textareaResizeHandle.focus({ preventScroll: true });
+  textareaResizeStart = { pointerId: event.pointerId, y: event.clientY, height: messageTextarea.getBoundingClientRect().height };
+  textareaResizeHandle.setPointerCapture(event.pointerId);
+  textareaResizeHandle.classList.add('is-resizing');
+});
+
+textareaResizeHandle?.addEventListener('pointermove', (event) => {
+  if (!textareaResizeStart || event.pointerId !== textareaResizeStart.pointerId) {
+    return;
+  }
+  renderTextareaHeight(textareaResizeStart.height + event.clientY - textareaResizeStart.y);
+});
+
+const finishTextareaResize = (event) => {
+  if (!textareaResizeStart || event.pointerId !== textareaResizeStart.pointerId) {
+    return;
+  }
+  if (textareaResizeHandle?.hasPointerCapture(event.pointerId)) {
+    textareaResizeHandle.releasePointerCapture(event.pointerId);
+  }
+  textareaResizeStart = null;
+  textareaResizeHandle?.classList.remove('is-resizing');
+};
+
+textareaResizeHandle?.addEventListener('pointerup', finishTextareaResize);
+textareaResizeHandle?.addEventListener('pointercancel', finishTextareaResize);
+textareaResizeHandle?.addEventListener('lostpointercapture', finishTextareaResize);
+
+textareaResizeHandle?.addEventListener('keydown', (event) => {
+  if (!messageTextarea) {
+    return;
+  }
+  const step = event.shiftKey ? 48 : 16;
+  const { minimum, maximum } = textareaHeightLimits();
+  const currentHeight = messageTextarea.getBoundingClientRect().height;
+  const requestedHeights = {
+    ArrowUp: currentHeight - step,
+    ArrowDown: currentHeight + step,
+    Home: minimum,
+    End: maximum,
+  };
+  if (!(event.key in requestedHeights)) {
+    return;
+  }
+  event.preventDefault();
+  renderTextareaHeight(requestedHeights[event.key]);
+});
+
+if (messageTextarea && textareaResizeHandle) {
+  renderTextareaHeight(messageTextarea.getBoundingClientRect().height);
+  if ('ResizeObserver' in window) {
+    new ResizeObserver(() => renderTextareaHeight(messageTextarea.getBoundingClientRect().height)).observe(messageTextarea);
+  }
+}
 
 const validateForm = () => {
   if (!contactForm) {
