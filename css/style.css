@@ -499,6 +499,34 @@ h3 {
   color: var(--muted);
 }
 
+.repository-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 1rem 0 0.75rem;
+}
+
+.repository-filter label {
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.repository-filter select {
+  max-width: 100%;
+  padding: 0.45rem 2rem 0.45rem 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-small);
+  background: var(--surface-raised);
+  color: var(--ink);
+  font: inherit;
+}
+
+.repository-filter select:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
 .retry-button {
   padding: 0.55rem 0.85rem;
   border: 1px solid var(--accent);

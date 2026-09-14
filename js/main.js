@@ -23,18 +23,21 @@ const projectsSection = document.querySelector('#projects');
 const githubStatus = document.querySelector('.github-status');
 const repoGrid = document.querySelector('.repo-grid');
 const retryButton = document.querySelector('.retry-button');
+const repositoryLanguageFilter = document.querySelector('#repository-language-filter');
 const messageTextarea = document.querySelector('#contact-message');
 const textareaResizeCorner = document.querySelector('.textarea-resize-corner');
 const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const githubUsername = projectsSection?.dataset.githubUsername?.trim() ?? '';
+const ALL_LANGUAGES = 'all';
+const NO_LANGUAGE = 'none';
 
 const appState = {
   theme: { current: LIGHT_THEME },
   menu: { open: false },
   scroll: { headerActive: false, topVisible: false },
   form: { status: 'idle', errors: {} },
-  api: { status: 'idle', repositories: [], message: '' },
+  api: { status: 'idle', repositories: [], message: '', filter: ALL_LANGUAGES },
 };
 
 let apiRequestId = 0;
@@ -365,6 +368,47 @@ const createRepositoryCard = (repository) => {
   return article;
 };
 
+const repositoryLanguageKey = ({ language }) => {
+  const normalizedLanguage = typeof language === 'string' ? language.trim() : '';
+  return normalizedLanguage ? `language:${normalizedLanguage}` : NO_LANGUAGE;
+};
+
+const repositoryLanguageOptions = (repositories) => {
+  const namedLanguages = [...new Set(repositories
+    .map(({ language }) => typeof language === 'string' ? language.trim() : '')
+    .filter(Boolean))]
+    .sort((left, right) => left.localeCompare(right, 'ko'));
+  const options = namedLanguages.map((language) => ({ value: `language:${language}`, label: language }));
+  if (repositories.some((repository) => repositoryLanguageKey(repository) === NO_LANGUAGE)) {
+    options.push({ value: NO_LANGUAGE, label: '언어 미지정' });
+  }
+  return [{ value: ALL_LANGUAGES, label: '전체' }, ...options];
+};
+
+const renderRepositoryFilter = () => {
+  if (!repositoryLanguageFilter) {
+    return;
+  }
+  if (appState.api.status === 'loading' || appState.api.status === 'error') {
+    repositoryLanguageFilter.disabled = true;
+    return;
+  }
+  const options = appState.api.status === 'success'
+    ? repositoryLanguageOptions(appState.api.repositories)
+    : [{ value: ALL_LANGUAGES, label: '전체' }];
+  if (!options.some(({ value }) => value === appState.api.filter)) {
+    appState.api.filter = ALL_LANGUAGES;
+  }
+  repositoryLanguageFilter.replaceChildren(...options.map(({ value, label }) => {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = label;
+    return option;
+  }));
+  repositoryLanguageFilter.value = appState.api.filter;
+  repositoryLanguageFilter.disabled = appState.api.status !== 'success';
+};
+
 const renderRepositories = () => {
   if (!githubStatus || !repoGrid || !retryButton) {
     return;
@@ -372,6 +416,7 @@ const renderRepositories = () => {
 
   repoGrid.replaceChildren();
   retryButton.hidden = appState.api.status !== 'error';
+  renderRepositoryFilter();
 
   const statusMessages = {
     idle: 'GitHub 계정 정보가 아직 준비되지 않았습니다. 설정 후 공개 저장소가 이곳에 표시됩니다.',
@@ -383,21 +428,31 @@ const renderRepositories = () => {
   githubStatus.textContent = statusMessages[appState.api.status];
 
   if (appState.api.status === 'success') {
-    const cards = appState.api.repositories.map(createRepositoryCard);
+    const filteredRepositories = appState.api.filter === ALL_LANGUAGES
+      ? appState.api.repositories
+      : appState.api.repositories.filter((repository) => repositoryLanguageKey(repository) === appState.api.filter);
+    if (filteredRepositories.length === 0) {
+      githubStatus.textContent = '선택한 언어에 해당하는 저장소가 없습니다.';
+      return;
+    }
+    if (appState.api.filter !== ALL_LANGUAGES) {
+      githubStatus.textContent = `공개 저장소 ${appState.api.repositories.length}개 중 ${filteredRepositories.length}개를 표시합니다.`;
+    }
+    const cards = filteredRepositories.map(createRepositoryCard);
     repoGrid.append(...cards);
   }
 };
 
 const loadRepositories = async () => {
   if (!githubUsername) {
-    appState.api = { status: 'idle', repositories: [], message: '' };
+    appState.api = { status: 'idle', repositories: [], message: '', filter: ALL_LANGUAGES };
     renderRepositories();
     alignInitialHashTarget(true);
     return;
   }
 
   const requestId = ++apiRequestId;
-  appState.api = { status: 'loading', repositories: [], message: '' };
+  appState.api = { status: 'loading', repositories: [], message: '', filter: appState.api.filter };
   renderRepositories();
 
   try {
@@ -416,8 +471,8 @@ const loadRepositories = async () => {
     }
 
     appState.api = payload.length === 0
-      ? { status: 'empty', repositories: [], message: '' }
-      : { status: 'success', repositories: payload.slice(0, 100), message: '' };
+      ? { status: 'empty', repositories: [], message: '', filter: ALL_LANGUAGES }
+      : { status: 'success', repositories: payload.slice(0, 100), message: '', filter: appState.api.filter };
   } catch (error) {
     if (requestId !== apiRequestId) {
       return;
@@ -426,6 +481,7 @@ const loadRepositories = async () => {
       status: 'error',
       repositories: [],
       message: error instanceof Error ? error.message : '네트워크 오류',
+      filter: appState.api.filter,
     };
   }
   renderRepositories();
@@ -529,6 +585,10 @@ contactForm?.addEventListener('submit', (event) => {
 });
 
 retryButton?.addEventListener('click', loadRepositories);
+repositoryLanguageFilter?.addEventListener('change', () => {
+  appState.api.filter = repositoryLanguageFilter.value;
+  renderRepositories();
+});
 if (initialHashCorrectionActive) {
   alignInitialHashTarget();
   window.addEventListener('load', () => alignInitialHashTarget(), { once: true });
