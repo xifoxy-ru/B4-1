@@ -330,6 +330,42 @@ h3 {
   font-size: clamp(1rem, 2.5vw, 1.16rem);
 }
 
+.hero-description-typing {
+  display: none;
+}
+
+.hero-description.typing-ready {
+  position: relative;
+}
+
+.hero-description.typing-ready .hero-description-static {
+  opacity: 0;
+}
+
+.hero-description.typing-ready .hero-description-typing {
+  position: absolute;
+  inset: 0;
+  display: block;
+  pointer-events: none;
+}
+
+.hero-description-typing.is-typing::after {
+  display: inline-block;
+  width: 1px;
+  height: 1em;
+  margin-left: 0.16em;
+  background: currentColor;
+  content: '';
+  vertical-align: -0.12em;
+  animation: typing-cursor 650ms step-end infinite;
+}
+
+@keyframes typing-cursor {
+  50% {
+    opacity: 0;
+  }
+}
+
 .hero-actions {
   display: flex;
   flex-wrap: wrap;

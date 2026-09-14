@@ -17,6 +17,9 @@ const menuToggle = document.querySelector('.menu-toggle');
 const primaryNav = document.querySelector('.primary-nav');
 const siteHeader = document.querySelector('.site-header');
 const topButton = document.querySelector('.top-button');
+const heroDescription = document.querySelector('.hero-description');
+const heroDescriptionStatic = document.querySelector('.hero-description-static');
+const heroDescriptionTyping = document.querySelector('.hero-description-typing');
 const contactForm = document.querySelector('.contact-form');
 const formResult = document.querySelector('.form-result');
 const projectsSection = document.querySelector('#projects');
@@ -45,6 +48,52 @@ let initialHashTarget = null;
 let initialHashCorrectionActive = false;
 let hashAlignmentFrame = 0;
 let previousScrollRestoration = null;
+let typingTimer = 0;
+
+const completeHeroTyping = () => {
+  if (!heroDescription || !heroDescriptionStatic || !heroDescriptionTyping) {
+    return;
+  }
+  window.clearTimeout(typingTimer);
+  heroDescriptionTyping.textContent = heroDescriptionStatic.textContent;
+  heroDescriptionTyping.classList.remove('is-typing');
+  heroDescription.dataset.typingState = 'complete';
+};
+
+const startHeroTyping = () => {
+  if (!heroDescription || !heroDescriptionStatic || !heroDescriptionTyping) {
+    return;
+  }
+  const fullText = heroDescriptionStatic.textContent;
+  heroDescription.classList.add('typing-ready');
+  if (reducedMotion.matches) {
+    completeHeroTyping();
+    return;
+  }
+
+  const segments = typeof Intl.Segmenter === 'function'
+    ? [...new Intl.Segmenter('ko', { granularity: 'grapheme' }).segment(fullText)].map(({ segment }) => segment)
+    : Array.from(fullText);
+  let index = 0;
+  heroDescriptionTyping.textContent = '';
+  heroDescriptionTyping.classList.add('is-typing');
+  heroDescription.dataset.typingState = 'running';
+
+  const typeNextSegment = () => {
+    if (reducedMotion.matches) {
+      completeHeroTyping();
+      return;
+    }
+    heroDescriptionTyping.textContent += segments[index];
+    index += 1;
+    if (index >= segments.length) {
+      completeHeroTyping();
+      return;
+    }
+    typingTimer = window.setTimeout(typeNextSegment, 28);
+  };
+  typeNextSegment();
+};
 
 const getHashTarget = () => {
   const targetId = window.location.hash.slice(1);
@@ -489,6 +538,7 @@ const loadRepositories = async () => {
 };
 
 setTheme(preferredTheme());
+startHeroTyping();
 renderMenu();
 updateScrollState();
 renderForm();
@@ -501,6 +551,12 @@ themeToggle?.addEventListener('click', () => {
 systemTheme.addEventListener?.('change', (event) => {
   if (readStoredTheme() === null) {
     setTheme(event.matches ? DARK_THEME : LIGHT_THEME);
+  }
+});
+
+reducedMotion.addEventListener?.('change', (event) => {
+  if (event.matches) {
+    completeHeroTyping();
   }
 });
 
