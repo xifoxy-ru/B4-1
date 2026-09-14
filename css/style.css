@@ -639,37 +639,41 @@ h3 {
 .form-field textarea {
   min-height: 8rem;
   max-height: 40rem;
-  resize: vertical;
+  padding-right: 1.75rem;
+  padding-bottom: 1.75rem;
+  resize: none;
 }
 
-.textarea-resize-handle {
-  display: flex;
-  width: 100%;
-  min-height: 2.75rem;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-  padding: 0.55rem 0.75rem;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-small);
-  background: var(--accent-soft);
-  color: var(--accent-strong);
+.textarea-shell {
+  position: relative;
+}
+
+.textarea-resize-corner {
+  position: absolute;
+  right: 1px;
+  bottom: 5px;
+  width: 1.625rem;
+  height: 1.625rem;
+  color: var(--muted);
   cursor: ns-resize;
-  font-size: 0.86rem;
-  font-weight: 800;
-  line-height: 1.25;
-  text-align: center;
   touch-action: none;
   user-select: none;
-  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
 }
 
-.textarea-resize-handle:hover,
-.textarea-resize-handle.is-resizing {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent-soft) 72%, var(--surface));
-  box-shadow: var(--shadow-small);
+.textarea-resize-corner::after {
+  position: absolute;
+  right: 0.3rem;
+  bottom: 0.3rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  background: repeating-linear-gradient(135deg, transparent 0 0.16rem, currentColor 0.16rem 0.23rem);
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  content: '';
+}
+
+.textarea-resize-corner:hover,
+.textarea-resize-corner.is-resizing {
+  color: var(--accent-strong);
 }
 
 .form-field [aria-invalid="true"] {
@@ -758,6 +762,12 @@ h3 {
 .site-footer a {
   color: var(--accent-strong);
   font-weight: 800;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 @media (min-width: 48rem) {

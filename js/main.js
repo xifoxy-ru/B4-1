@@ -24,7 +24,7 @@ const githubStatus = document.querySelector('.github-status');
 const repoGrid = document.querySelector('.repo-grid');
 const retryButton = document.querySelector('.retry-button');
 const messageTextarea = document.querySelector('#contact-message');
-const textareaResizeHandle = document.querySelector('.textarea-resize-handle');
+const textareaResizeCorner = document.querySelector('.textarea-resize-corner');
 const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const githubUsername = projectsSection?.dataset.githubUsername?.trim() ?? '';
@@ -215,32 +215,32 @@ const textareaHeightLimits = () => {
 };
 
 const renderTextareaHeight = (requestedHeight) => {
-  if (!messageTextarea || !textareaResizeHandle) {
+  if (!messageTextarea || !textareaResizeCorner) {
     return;
   }
   const { minimum, maximum } = textareaHeightLimits();
   const height = Math.min(maximum, Math.max(minimum, requestedHeight));
   messageTextarea.style.height = `${height}px`;
-  textareaResizeHandle.setAttribute('aria-valuemin', String(Math.round(minimum)));
-  textareaResizeHandle.setAttribute('aria-valuemax', String(Math.round(maximum)));
-  textareaResizeHandle.setAttribute('aria-valuenow', String(Math.round(height)));
-  textareaResizeHandle.setAttribute('aria-valuetext', `메시지 입력창 높이 ${Math.round(height)}픽셀`);
+  textareaResizeCorner.setAttribute('aria-valuemin', String(Math.round(minimum)));
+  textareaResizeCorner.setAttribute('aria-valuemax', String(Math.round(maximum)));
+  textareaResizeCorner.setAttribute('aria-valuenow', String(Math.round(height)));
+  textareaResizeCorner.setAttribute('aria-valuetext', `메시지 입력창 높이 ${Math.round(height)}픽셀`);
 };
 
 let textareaResizeStart = null;
 
-textareaResizeHandle?.addEventListener('pointerdown', (event) => {
+textareaResizeCorner?.addEventListener('pointerdown', (event) => {
   if (!event.isPrimary || (event.pointerType === 'mouse' && event.button !== 0) || !messageTextarea) {
     return;
   }
   event.preventDefault();
-  textareaResizeHandle.focus({ preventScroll: true });
+  textareaResizeCorner.focus({ preventScroll: true });
   textareaResizeStart = { pointerId: event.pointerId, y: event.clientY, height: messageTextarea.getBoundingClientRect().height };
-  textareaResizeHandle.setPointerCapture(event.pointerId);
-  textareaResizeHandle.classList.add('is-resizing');
+  textareaResizeCorner.setPointerCapture(event.pointerId);
+  textareaResizeCorner.classList.add('is-resizing');
 });
 
-textareaResizeHandle?.addEventListener('pointermove', (event) => {
+textareaResizeCorner?.addEventListener('pointermove', (event) => {
   if (!textareaResizeStart || event.pointerId !== textareaResizeStart.pointerId) {
     return;
   }
@@ -251,18 +251,18 @@ const finishTextareaResize = (event) => {
   if (!textareaResizeStart || event.pointerId !== textareaResizeStart.pointerId) {
     return;
   }
-  if (textareaResizeHandle?.hasPointerCapture(event.pointerId)) {
-    textareaResizeHandle.releasePointerCapture(event.pointerId);
+  if (textareaResizeCorner?.hasPointerCapture(event.pointerId)) {
+    textareaResizeCorner.releasePointerCapture(event.pointerId);
   }
   textareaResizeStart = null;
-  textareaResizeHandle?.classList.remove('is-resizing');
+  textareaResizeCorner?.classList.remove('is-resizing');
 };
 
-textareaResizeHandle?.addEventListener('pointerup', finishTextareaResize);
-textareaResizeHandle?.addEventListener('pointercancel', finishTextareaResize);
-textareaResizeHandle?.addEventListener('lostpointercapture', finishTextareaResize);
+textareaResizeCorner?.addEventListener('pointerup', finishTextareaResize);
+textareaResizeCorner?.addEventListener('pointercancel', finishTextareaResize);
+textareaResizeCorner?.addEventListener('lostpointercapture', finishTextareaResize);
 
-textareaResizeHandle?.addEventListener('keydown', (event) => {
+textareaResizeCorner?.addEventListener('keydown', (event) => {
   if (!messageTextarea) {
     return;
   }
@@ -282,7 +282,7 @@ textareaResizeHandle?.addEventListener('keydown', (event) => {
   renderTextareaHeight(requestedHeights[event.key]);
 });
 
-if (messageTextarea && textareaResizeHandle) {
+if (messageTextarea && textareaResizeCorner) {
   renderTextareaHeight(messageTextarea.getBoundingClientRect().height);
   if ('ResizeObserver' in window) {
     new ResizeObserver(() => renderTextareaHeight(messageTextarea.getBoundingClientRect().height)).observe(messageTextarea);
