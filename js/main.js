@@ -31,6 +31,71 @@ const appState = {
 };
 
 let apiRequestId = 0;
+let initialHashTarget = null;
+let initialHashCorrectionActive = false;
+let hashAlignmentFrame = 0;
+let previousScrollRestoration = null;
+
+const getHashTarget = () => {
+  const targetId = window.location.hash.slice(1);
+  return targetId ? document.getElementById(targetId) : null;
+};
+
+const cancelInitialHashCorrection = () => {
+  initialHashCorrectionActive = false;
+  window.cancelAnimationFrame(hashAlignmentFrame);
+  if (previousScrollRestoration) {
+    window.history.scrollRestoration = previousScrollRestoration;
+    previousScrollRestoration = null;
+  }
+};
+
+const layoutTop = (element) => {
+  let top = 0;
+  let current = element;
+  while (current) {
+    top += current.offsetTop;
+    current = current.offsetParent;
+  }
+  return top;
+};
+
+const alignInitialHashTarget = (complete = false) => {
+  if (!initialHashCorrectionActive || !initialHashTarget) {
+    return;
+  }
+
+  initialHashTarget.classList.add('is-visible');
+  window.cancelAnimationFrame(hashAlignmentFrame);
+  hashAlignmentFrame = window.requestAnimationFrame(() => {
+    hashAlignmentFrame = window.requestAnimationFrame(() => {
+      if (!initialHashCorrectionActive || !initialHashTarget) {
+        return;
+      }
+      const headerOffset = (siteHeader?.getBoundingClientRect().height ?? 0) + 16;
+      const targetTop = layoutTop(initialHashTarget) - headerOffset;
+      const previousInlineBehavior = document.documentElement.style.scrollBehavior;
+      document.documentElement.style.scrollBehavior = 'auto';
+      window.scrollTo({ top: Math.max(0, targetTop), behavior: 'auto' });
+      document.documentElement.style.scrollBehavior = previousInlineBehavior;
+      updateScrollState();
+      if (complete) {
+        cancelInitialHashCorrection();
+      }
+    });
+  });
+};
+
+initialHashTarget = getHashTarget();
+initialHashCorrectionActive = Boolean(initialHashTarget);
+if (initialHashCorrectionActive) {
+  try {
+    previousScrollRestoration = window.history.scrollRestoration;
+    window.history.scrollRestoration = 'manual';
+  } catch {
+    previousScrollRestoration = null;
+  }
+}
 
 const isTheme = (value) => value === DARK_THEME || value === LIGHT_THEME;
 
@@ -207,6 +272,7 @@ const loadRepositories = async () => {
   if (!githubUsername) {
     appState.api = { status: 'idle', repositories: [], message: '' };
     renderRepositories();
+    alignInitialHashTarget(true);
     return;
   }
 
@@ -243,6 +309,7 @@ const loadRepositories = async () => {
     };
   }
   renderRepositories();
+  alignInitialHashTarget(true);
 };
 
 setTheme(preferredTheme());
@@ -270,6 +337,9 @@ document.addEventListener('click', (event) => {
 });
 
 document.addEventListener('keydown', (event) => {
+  if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', 'Enter', ' '].includes(event.key)) {
+    cancelInitialHashCorrection();
+  }
   if (event.key === 'Escape' && appState.menu.open) {
     setMenuOpen(false);
     menuToggle?.focus();
@@ -282,6 +352,7 @@ document.querySelectorAll('a[href^="#"]').forEach((link) => {
     const target = targetId ? document.querySelector(targetId) : null;
     if (target) {
       event.preventDefault();
+      cancelInitialHashCorrection();
       setMenuOpen(false);
       scrollToTarget(target);
       history.replaceState(null, '', targetId);
@@ -290,7 +361,11 @@ document.querySelectorAll('a[href^="#"]').forEach((link) => {
 });
 
 window.addEventListener('scroll', updateScrollState, { passive: true });
+window.addEventListener('wheel', cancelInitialHashCorrection, { passive: true, once: true });
+window.addEventListener('touchstart', cancelInitialHashCorrection, { passive: true, once: true });
+window.addEventListener('pointerdown', cancelInitialHashCorrection, { passive: true, once: true });
 topButton?.addEventListener('click', () => {
+  cancelInitialHashCorrection();
   window.scrollTo({ top: 0, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
 });
 
@@ -334,4 +409,8 @@ contactForm?.addEventListener('submit', (event) => {
 });
 
 retryButton?.addEventListener('click', loadRepositories);
+if (initialHashCorrectionActive) {
+  alignInitialHashTarget();
+  window.addEventListener('load', () => alignInitialHashTarget(), { once: true });
+}
 loadRepositories();
