@@ -6,13 +6,13 @@ PORT ?= 4173
 ROOT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 help:
-	@echo "make serve       Start a local static server on port $(PORT)"
+	@echo "make serve [PORT=$(PORT)]  Start a local static server"
 	@echo "make check       Run dependency-free source checks"
 	@echo "make clean-cache Preview generated cache cleanup"
 	@echo "make clean-cache CLEAN=1  Remove only .cache and coverage"
 
 serve:
-	cd "$(ROOT_DIR)" && $(PYTHON) -m http.server $(PORT)
+	cd "$(ROOT_DIR)" && $(PYTHON) tools/serve.py "$(PORT)"
 
 check:
 	@test -f "$(ROOT_DIR)index.html"
