@@ -10,11 +10,17 @@ HTML, CSS, JavaScript를 배우며 직접 만든 화면과 상호작용을 기�
 - 키보드로 사용할 수 있는 모바일 메뉴와 밝은/어두운 테마 전환
 - 스크롤 `60px` 이후 헤더 강조, `300px` 이후 맨 위 버튼 표시
 - `IntersectionObserver` 임계값 `0.2`를 사용한 섹션 표시와 모션 감소 설정 지원
-- 이름, 이메일, 메시지를 검사하는 로컬 데모 양식
+- 이름, 이메일, 메시지를 검사한 뒤 EmailJS로 전송하는 문의 양식
 - Hero 제목과 소개 문장을 차례로 한 번만 보여 주는 타이핑 효과와 모션 감소·무 JavaScript 대체 표시
 - GitHub 저장소를 30개씩 필요할 때 불러오고 화면에는 6개씩 표시하는 페이지 이동
 
-문의 양식은 제출 이벤트와 화면 상태만 확인합니다. 입력한 내용은 이메일이나 외부 서비스로 전송되지 않으며 저장되지도 않습니다.
+문의 양식은 로컬 입력 검사를 통과한 명시적 제출에만 EmailJS REST API로 `name`, `email`, `message`를 전송합니다. 전송 중에는 중복 제출을 막고, API가 요청을 수락한 뒤에만 입력을 비웁니다. 실패하면 입력을 유지하며 네트워크 오류, 요청 제한, 타임아웃을 구분해 안내합니다. 타임아웃은 서버 응답을 확인하지 못한 상태이므로 메시지가 전송되었을 가능성을 알리고 자동으로 재시도하지 않습니다.
+
+## EmailJS 설정
+
+브라우저에서 사용하는 공개 식별자는 `js/config.js`의 서비스 ID `service_5e0gjwa`, 템플릿 ID `template_x2m8fzq`, 공개 키 `I9tZcMR1i6mLTUXj8`입니다. 이 값들은 EmailJS의 클라이언트 연동용 공개 값이며 비밀 키나 Private Key를 코드에 넣지 않습니다. 전송 형식은 [EmailJS REST API 공식 문서](https://www.emailjs.com/docs/rest-api/send/)를 따릅니다.
+
+EmailJS 대시보드의 템플릿 변수는 정확히 `name`, `email`, `message`를 사용합니다. 수신자는 템플릿의 To Email에 `xifoxy.ru@gmail.com`, 발신자는 연결된 Gmail 서비스의 기본값, Reply-To는 `{{email}}`로 대시보드에서 설정합니다. 허용 도메인도 실제 배포 주소에 맞게 EmailJS 대시보드에서 별도로 설정해야 합니다. 저장소에서는 이 외부 설정을 확인하거나 변경하지 않았으며, 실제 이메일 전송 점검도 아직 수행하지 않았습니다.
 
 메시지 입력창은 최소 `8rem`, 최대 `40rem` 높이에서 세로 크기를 조절할 수 있습니다. 브라우저의 일반적인 우하단 모양을 유지하면서 잡을 수 있는 코너 영역을 약 26px로 넓혔습니다. 코너는 드래그하거나 `↑`/`↓` 키로 16px씩, `Shift`와 함께 48px씩 조절할 수 있습니다. `Home`은 최소 높이, `End`는 최대 높이로 이동합니다.
 
@@ -43,10 +49,10 @@ make serve
 - `css/tokens.css`, `base.css`, `layout.css`: 테마 토큰, 기본 요소, 공통 레이아웃
 - `css/header.css`, `hero.css`, `repositories.css`, `contact.css`, `footer.css`: 화면 영역별 스타일과 해당 반응형 규칙
 - `js/main.js`: DOM 초기화와 모듈 간 배선
-- `js/config.js`: 사용자 경험에 영향을 주는 조정값
+- `js/config.js`: 사용자 경험 조정값과 EmailJS 공개 식별자
 - `js/theme.js`, `navigation.js`, `hero-typing.js`: 전역 화면 상호작용
 - `js/repositories.js`: GitHub 요청, 필터, 저장소 카드 표시
-- `js/contact.js`, `validation.js`, `textarea-resize.js`: 문의 양식, 순수 입력 검사, 입력창 크기 조절
+- `js/contact.js`, `email-service.js`, `validation.js`, `textarea-resize.js`: 문의 양식 상태, EmailJS 전송, 순수 입력 검사, 입력창 크기 조절
 - `images/`: 제품 이미지 자산
 
 GitHub Pages에 배포할 때 필요한 제품 파일은 `index.html`, `css/`, `js/`, `images/`입니다. `README.md`, `Makefile`, `.gitignore`는 개발과 저장소 사용을 위해 함께 관리하지만 배포 결과에는 필요하지 않습니다. 배포와 원격 Git 작업은 이 로컬 구현 범위에 포함되지 않습니다.
