@@ -1,7 +1,8 @@
 import { HASH_HEADER_GAP, HEADER_SCROLL_THRESHOLD, REVEAL_THRESHOLD, TOP_BUTTON_SCROLL_THRESHOLD } from './config.js';
 
-export const createNavigationController = ({ header, menuToggle, primaryNav, topButton, reducedMotion }) => {
+export const createNavigationController = ({ header, menuToggle, primaryNav, footer, topButton, reducedMotion }) => {
   const state = { menuOpen: false, headerActive: false, topVisible: false };
+  const topButtonGap = topButton ? Number.parseFloat(window.getComputedStyle(topButton).bottom) || 16 : 16;
   let initialHashTarget = null;
   let initialHashCorrectionActive = false;
   let hashAlignmentFrame = 0;
@@ -16,12 +17,22 @@ export const createNavigationController = ({ header, menuToggle, primaryNav, top
     state.menuOpen = Boolean(open);
     renderMenu();
   };
+  const updateTopButtonPosition = () => {
+    if (!topButton || !footer) {
+      return;
+    }
+    const footerTop = footer.getBoundingClientRect().top;
+    const requiredBottom = window.innerHeight - footerTop + topButtonGap;
+    const maximumBottom = Math.max(topButtonGap, window.innerHeight - topButton.offsetHeight - topButtonGap);
+    topButton.style.bottom = `${Math.min(Math.max(topButtonGap, requiredBottom), maximumBottom)}px`;
+  };
   const updateScrollState = () => {
     state.headerActive = window.scrollY > HEADER_SCROLL_THRESHOLD;
     state.topVisible = window.scrollY > TOP_BUTTON_SCROLL_THRESHOLD;
     header?.classList.toggle('is-scrolled', state.headerActive);
     if (topButton) {
       topButton.hidden = !state.topVisible;
+      updateTopButtonPosition();
     }
   };
   const cancelInitialHashCorrection = () => {
@@ -109,6 +120,7 @@ export const createNavigationController = ({ header, menuToggle, primaryNav, top
     });
   });
   window.addEventListener('scroll', updateScrollState, { passive: true });
+  window.addEventListener('resize', updateScrollState);
   window.addEventListener('wheel', cancelInitialHashCorrection, { passive: true, once: true });
   window.addEventListener('touchstart', cancelInitialHashCorrection, { passive: true, once: true });
   window.addEventListener('pointerdown', cancelInitialHashCorrection, { passive: true, once: true });

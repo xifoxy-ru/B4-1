@@ -14,6 +14,7 @@ const navigation = createNavigationController({
   header: document.querySelector('.site-header'),
   menuToggle: document.querySelector('.menu-toggle'),
   primaryNav: document.querySelector('.primary-nav'),
+  footer: document.querySelector('.site-footer'),
   topButton: document.querySelector('.top-button'),
   reducedMotion,
 });
