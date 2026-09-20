@@ -1,4 +1,4 @@
-import { REPOSITORY_LIMIT } from './config.js';
+import { REPOSITORIES_PER_VIEW, REPOSITORY_API_PAGE_SIZE } from './config.js';
 
 const ALL_LANGUAGES = 'all';
 const NO_LANGUAGE = 'none';
@@ -53,23 +53,45 @@ const createRepositoryCard = (repository) => {
   return article;
 };
 
-export const createRepositoriesController = ({ username, status, grid, retry, filter, onSettled }) => {
+const hasNextLink = (linkHeader) => typeof linkHeader === 'string'
+  && linkHeader.split(',').some((link) => /;\s*rel="?next"?\s*$/.test(link.trim()));
+
+const repositoryKey = (repository) => {
+  if (Number.isFinite(repository?.id)) {
+    return `id:${repository.id}`;
+  }
+  return `fallback:${repository?.html_url ?? ''}:${repository?.name ?? ''}`;
+};
+
+export const createRepositoriesController = ({
+  username, status, grid, retry, filter, pagination, previousPage, nextPage, pageStatus, onSettled,
+}) => {
   if (!status || !grid || !retry) {
-    onSettled();
+    onSettled?.();
     return { load: () => Promise.resolve() };
   }
-  let requestId = 0;
-  let state = { status: 'idle', repositories: [], message: '', filter: ALL_LANGUAGES };
+  let initialRequestSettled = false;
+  let state = {
+    phase: 'idle', repositories: [], message: '', filter: ALL_LANGUAGES,
+    apiPage: 0, hasNextApiPage: false, uiPage: 1,
+  };
+
+  const settleInitialRequest = () => {
+    if (!initialRequestSettled) {
+      initialRequestSettled = true;
+      onSettled?.();
+    }
+  };
+
+  const filteredRepositories = () => state.filter === ALL_LANGUAGES
+    ? state.repositories
+    : state.repositories.filter((repository) => repositoryLanguageKey(repository) === state.filter);
 
   const renderFilter = () => {
     if (!filter) {
       return;
     }
-    if (state.status === 'loading' || state.status === 'error') {
-      filter.disabled = true;
-      return;
-    }
-    const options = state.status === 'success'
+    const options = state.repositories.length > 0
       ? repositoryLanguageOptions(state.repositories)
       : [{ value: ALL_LANGUAGES, label: '전체' }];
     if (!options.some(({ value }) => value === state.filter)) {
@@ -82,49 +104,83 @@ export const createRepositoriesController = ({ username, status, grid, retry, fi
       return option;
     }));
     filter.value = state.filter;
-    filter.disabled = state.status !== 'success';
+    filter.disabled = state.repositories.length === 0
+      || state.phase === 'loading-initial'
+      || state.phase === 'loading-more';
+  };
+
+  const renderPagination = (repositories) => {
+    if (!pagination || !previousPage || !nextPage || !pageStatus) {
+      return;
+    }
+    const totalPages = Math.max(1, Math.ceil(repositories.length / REPOSITORIES_PER_VIEW));
+    const hasLocalNextPage = state.uiPage < totalPages;
+    const loading = state.phase === 'loading-more';
+    pagination.hidden = state.repositories.length === 0;
+    previousPage.disabled = loading || state.uiPage <= 1;
+    nextPage.disabled = loading || (!hasLocalNextPage && !state.hasNextApiPage);
+    nextPage.textContent = loading ? '불러오는 중…' : hasLocalNextPage ? '다음' : '더 불러오기';
+    pageStatus.textContent = `${state.uiPage} / ${totalPages}`;
   };
 
   const render = () => {
     grid.replaceChildren();
-    retry.hidden = state.status !== 'error';
+    retry.hidden = state.phase !== 'error-initial' && state.phase !== 'error-more';
     renderFilter();
     const statusMessages = {
       idle: 'GitHub 계정 정보가 아직 준비되지 않았습니다. 설정 후 공개 저장소가 이곳에 표시됩니다.',
-      loading: '공개 저장소를 불러오는 중입니다…',
+      'loading-initial': '공개 저장소를 불러오는 중입니다…',
       empty: '표시할 공개 저장소가 없습니다.',
-      error: `공개 저장소를 불러오지 못했습니다. ${state.message}`,
-      success: `최근 업데이트 순으로 공개 저장소 ${state.repositories.length}개를 표시합니다. 최대 100개까지 요청합니다.`,
+      'error-initial': `공개 저장소를 불러오지 못했습니다. ${state.message}`,
     };
-    status.textContent = statusMessages[state.status];
-    if (state.status !== 'success') {
+    if (statusMessages[state.phase]) {
+      status.textContent = statusMessages[state.phase];
+    }
+    if (state.repositories.length === 0) {
+      if (pagination) {
+        pagination.hidden = true;
+      }
       return;
     }
-    const filteredRepositories = state.filter === ALL_LANGUAGES
-      ? state.repositories
-      : state.repositories.filter((repository) => repositoryLanguageKey(repository) === state.filter);
-    if (filteredRepositories.length === 0) {
-      status.textContent = '선택한 언어에 해당하는 저장소가 없습니다.';
+    const matchingRepositories = filteredRepositories();
+    const totalPages = Math.max(1, Math.ceil(matchingRepositories.length / REPOSITORIES_PER_VIEW));
+    state.uiPage = Math.min(state.uiPage, totalPages);
+    const start = (state.uiPage - 1) * REPOSITORIES_PER_VIEW;
+    const visibleRepositories = matchingRepositories.slice(start, start + REPOSITORIES_PER_VIEW);
+
+    if (state.phase === 'loading-more') {
+      status.textContent = `저장소를 더 불러오는 중입니다… 현재 ${state.repositories.length}개를 불러왔습니다.`;
+    } else if (state.phase === 'error-more') {
+      status.textContent = `추가 저장소를 불러오지 못했습니다. 현재 불러온 ${state.repositories.length}개는 계속 볼 수 있습니다. ${state.message}`;
+    } else if (matchingRepositories.length === 0) {
+      status.textContent = state.hasNextApiPage
+        ? `불러온 저장소 ${state.repositories.length}개에는 선택한 언어의 저장소가 없습니다. 더 불러올 수 있습니다.`
+        : `불러온 저장소 ${state.repositories.length}개에는 선택한 언어의 저장소가 없습니다.`;
+    } else if (state.filter === ALL_LANGUAGES) {
+      const end = Math.min(start + visibleRepositories.length, matchingRepositories.length);
+      status.textContent = `최근 업데이트 순으로 저장소 ${state.repositories.length}개를 불러왔습니다. ${start + 1}–${end}번째를 표시합니다.`;
+    } else {
+      status.textContent = `불러온 저장소 ${state.repositories.length}개 중 선택한 언어의 저장소 ${matchingRepositories.length}개를 표시합니다.`;
+    }
+    if (visibleRepositories.length === 0) {
+      renderPagination(matchingRepositories);
       return;
     }
-    if (state.filter !== ALL_LANGUAGES) {
-      status.textContent = `공개 저장소 ${state.repositories.length}개 중 ${filteredRepositories.length}개를 표시합니다.`;
-    }
-    grid.append(...filteredRepositories.map(createRepositoryCard));
+    grid.append(...visibleRepositories.map(createRepositoryCard));
+    renderPagination(matchingRepositories);
   };
 
-  const load = async () => {
-    if (!username) {
-      state = { status: 'idle', repositories: [], message: '', filter: ALL_LANGUAGES };
-      render();
-      onSettled();
+  const requestApiPage = async (page, advanceUiPage = false) => {
+    if (state.phase === 'loading-initial' || state.phase === 'loading-more') {
       return;
     }
-    const activeRequestId = ++requestId;
-    state = { status: 'loading', repositories: [], message: '', filter: state.filter };
+    const initialLoad = page === 1 && state.repositories.length === 0;
+    const previousTotalPages = Math.max(1, Math.ceil(filteredRepositories().length / REPOSITORIES_PER_VIEW));
+    state.phase = initialLoad ? 'loading-initial' : 'loading-more';
+    state.message = '';
     render();
     try {
-      const endpoint = `https://api.github.com/users/${encodeURIComponent(username)}/repos?sort=updated&per_page=${REPOSITORY_LIMIT}`;
+      const endpoint = `https://api.github.com/users/${encodeURIComponent(username)}/repos?sort=updated&per_page=${REPOSITORY_API_PAGE_SIZE}&page=${page}`;
       const response = await fetch(endpoint, { headers: { Accept: 'application/vnd.github+json' } });
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
@@ -133,30 +189,83 @@ export const createRepositoriesController = ({ username, status, grid, retry, fi
       if (!Array.isArray(payload)) {
         throw new Error('응답 형식 오류');
       }
-      if (activeRequestId !== requestId) {
-        return;
+      const knownKeys = new Set(state.repositories.map(repositoryKey));
+      const newRepositories = payload.filter((repository) => {
+        const key = repositoryKey(repository);
+        if (knownKeys.has(key)) {
+          return false;
+        }
+        knownKeys.add(key);
+        return true;
+      });
+      state.repositories.push(...newRepositories);
+      state.apiPage = page;
+      const linkHeader = response.headers?.get?.('Link') ?? '';
+      state.hasNextApiPage = linkHeader
+        ? hasNextLink(linkHeader)
+        : payload.length === REPOSITORY_API_PAGE_SIZE;
+      if (state.repositories.length === 0) {
+        state.phase = 'empty';
+        state.filter = ALL_LANGUAGES;
+      } else {
+        state.phase = 'ready';
+        const nextTotalPages = Math.max(1, Math.ceil(filteredRepositories().length / REPOSITORIES_PER_VIEW));
+        if (advanceUiPage && state.uiPage >= previousTotalPages && nextTotalPages > state.uiPage) {
+          state.uiPage += 1;
+        }
       }
-      state = payload.length === 0
-        ? { status: 'empty', repositories: [], message: '', filter: ALL_LANGUAGES }
-        : { status: 'success', repositories: payload.slice(0, REPOSITORY_LIMIT), message: '', filter: state.filter };
     } catch (error) {
-      if (activeRequestId !== requestId) {
-        return;
-      }
-      state = {
-        status: 'error', repositories: [],
-        message: error instanceof Error ? error.message : '네트워크 오류', filter: state.filter,
-      };
+      state.phase = initialLoad ? 'error-initial' : 'error-more';
+      state.message = error instanceof Error ? error.message : '네트워크 오류';
     }
     render();
-    onSettled();
+    if (initialLoad) {
+      settleInitialRequest();
+    }
+  };
+
+  const load = async () => {
+    if (!username) {
+      state.phase = 'idle';
+      render();
+      settleInitialRequest();
+      return;
+    }
+    if (state.repositories.length === 0) {
+      await requestApiPage(1);
+    }
   };
 
   render();
-  retry.addEventListener('click', load);
+  retry.addEventListener('click', () => {
+    if (state.phase === 'error-more') {
+      requestApiPage(state.apiPage + 1, true);
+    } else {
+      requestApiPage(1);
+    }
+  });
   filter?.addEventListener('change', () => {
     state.filter = filter.value;
+    state.uiPage = 1;
     render();
+  });
+  previousPage?.addEventListener('click', () => {
+    if (state.phase !== 'loading-more' && state.uiPage > 1) {
+      state.uiPage -= 1;
+      render();
+    }
+  });
+  nextPage?.addEventListener('click', () => {
+    if (state.phase === 'loading-more') {
+      return;
+    }
+    const totalPages = Math.max(1, Math.ceil(filteredRepositories().length / REPOSITORIES_PER_VIEW));
+    if (state.uiPage < totalPages) {
+      state.uiPage += 1;
+      render();
+    } else if (state.hasNextApiPage) {
+      requestApiPage(state.apiPage + 1, true);
+    }
   });
   return { load };
 };

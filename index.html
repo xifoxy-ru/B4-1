@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="학습용으로 제작 중인 개인 포트폴리오입니다.">
-    <title>포트폴리오 준비 중</title>
+    <meta name="description" content="HTML, CSS, JavaScript로 만들고 GitHub에 기록하는 학습 포트폴리오입니다.">
+    <title>웹을 배우고 기록하는 포트폴리오</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="js/main.js" type="module"></script>
   </head>
@@ -42,10 +42,13 @@
     <main id="main-content">
       <section class="hero" id="home" aria-labelledby="home-title">
         <div class="hero-copy">
-          <p class="eyebrow">Temporary portfolio · Local demo</p>
-          <h1 id="home-title">배우고 만들며,<br><span>기록하는 사람</span></h1>
+          <p class="eyebrow">Learning · Building · GitHub</p>
+          <h1 class="hero-title" id="home-title">
+            <span class="hero-title-static">배우고 만들며,<br><span>기록하는 사람</span></span>
+            <span class="hero-title-typing" aria-hidden="true"><span data-title-line="first"></span><br><span data-title-line="second"></span></span>
+          </h1>
           <p class="hero-description">
-            <span class="hero-description-static">이름과 소개는 실제 정보가 준비될 때까지 임시 문구로 표시됩니다. 작지만 분명한 경험을 차근차근 만들고 있습니다.</span>
+            <span class="hero-description-static">HTML, CSS, JavaScript로 직접 만들고 다듬으며 배운 내용을 기록합니다. GitHub의 xifoxy-ru 공개 저장소에서 작업 과정을 확인할 수 있습니다.</span>
             <span class="hero-description-typing" aria-hidden="true"></span>
           </p>
           <div class="hero-actions">
@@ -54,7 +57,7 @@
           </div>
         </div>
 
-        <div class="profile-placeholder" role="img" aria-label="실제 프로필 이미지가 준비되기 전 사용하는 추상 도형 일러스트">
+        <div class="profile-placeholder" role="img" aria-label="웹 학습과 제작 과정을 상징하는 추상 도형 일러스트">
           <span class="shape shape-back" aria-hidden="true"></span>
           <span class="shape shape-middle" aria-hidden="true"></span>
           <span class="shape shape-front" aria-hidden="true">P</span>
@@ -67,10 +70,10 @@
           <h2 id="about-title">소개</h2>
         </div>
         <div class="content-panel about-panel">
-          <img src="images/profile-placeholder.svg" alt="실제 프로필 사진을 기다리는 임시 추상 프로필 일러스트" width="320" height="320">
+          <img src="images/profile-placeholder.svg" alt="HTML, CSS, JavaScript 학습을 상징하는 추상 도형 일러스트" width="320" height="320">
           <div>
-            <h3>소개 문구 준비 중</h3>
-            <p>현재 포트폴리오의 문구와 이미지는 모두 임시 콘텐츠입니다. 실제 경험과 목표가 정리되면 이 영역을 사용자 이야기로 교체합니다.</p>
+            <h3>배운 것을 직접 만들어 봅니다</h3>
+            <p>HTML로 구조를 세우고 CSS로 화면을 다듬으며 JavaScript로 상호작용을 구현하고 있습니다. 만든 과정은 GitHub의 xifoxy-ru 공개 저장소에 기록합니다.</p>
           </div>
         </div>
       </section>
@@ -114,13 +117,18 @@
               <button class="retry-button" type="button" hidden>다시 시도</button>
             </div>
             <div class="repository-filter">
-              <label for="repository-language-filter">언어</label>
+              <label for="repository-language-filter">불러온 저장소에서 언어 선택</label>
               <select id="repository-language-filter" disabled>
                 <option value="all">전체</option>
               </select>
             </div>
             <p class="github-status" role="status" aria-live="polite"></p>
             <div class="repo-grid"></div>
+            <nav class="repository-pagination" aria-label="저장소 페이지" hidden>
+              <button class="repository-page-button repository-previous-button" type="button">이전</button>
+              <span class="repository-page-status" aria-live="polite"></span>
+              <button class="repository-page-button repository-next-button" type="button">다음</button>
+            </nav>
           </div>
         </div>
       </section>
@@ -160,7 +168,6 @@
       <p>© 2026 Portfolio</p>
       <div class="footer-links">
         <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">Instagram</a>
-        <a href="#home">맨 위로</a>
       </div>
     </footer>
 

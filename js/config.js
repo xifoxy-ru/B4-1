@@ -1,4 +1,5 @@
-export const REPOSITORY_LIMIT = 100;
+export const REPOSITORY_API_PAGE_SIZE = 30;
+export const REPOSITORIES_PER_VIEW = 6;
 
 export const HERO_TYPING_DELAY = 28;
 export const HEADER_SCROLL_THRESHOLD = 60;

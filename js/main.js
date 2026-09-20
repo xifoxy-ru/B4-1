@@ -26,6 +26,10 @@ initializeHeroTyping({
   container: document.querySelector('.hero-description'),
   staticText: document.querySelector('.hero-description-static'),
   typingText: document.querySelector('.hero-description-typing'),
+  title: document.querySelector('.hero-title'),
+  titleStatic: document.querySelector('.hero-title-static'),
+  titleFirstLine: document.querySelector('[data-title-line="first"]'),
+  titleSecondLine: document.querySelector('[data-title-line="second"]'),
   reducedMotion,
 });
 initializeContactForm({ form: document.querySelector('.contact-form'), result: document.querySelector('.form-result') });
@@ -41,6 +45,10 @@ const repositories = createRepositoriesController({
   grid: document.querySelector('.repo-grid'),
   retry: document.querySelector('.retry-button'),
   filter: document.querySelector('#repository-language-filter'),
+  pagination: document.querySelector('.repository-pagination'),
+  previousPage: document.querySelector('.repository-previous-button'),
+  nextPage: document.querySelector('.repository-next-button'),
+  pageStatus: document.querySelector('.repository-page-status'),
   onSettled: navigation.completeInitialHashCorrection,
 });
 repositories.load();

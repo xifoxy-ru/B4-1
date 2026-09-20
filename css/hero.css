@@ -2,12 +2,20 @@
   display: grid; min-height: calc(100svh - var(--header-height)); align-items: center;
   gap: 3rem; padding-block: 5rem;
 }
+.hero-title { position: relative; }
+.hero-title-static { color: inherit; }
+.hero-title-static > span { color: var(--accent); }
+.hero-title-typing { display: none; color: inherit; }
+.hero-title-typing [data-title-line="first"] { color: inherit; }
+.hero-title-typing [data-title-line="second"] { color: var(--accent); }
+.hero-title.typing-ready .hero-title-static { opacity: 0; }
+.hero-title.typing-ready .hero-title-typing { position: absolute; inset: 0; display: block; pointer-events: none; }
 .hero-description { max-width: 39rem; margin-bottom: 2rem; color: var(--muted); font-size: clamp(1rem, 2.5vw, 1.16rem); }
 .hero-description-typing { display: none; }
 .hero-description.typing-ready { position: relative; }
 .hero-description.typing-ready .hero-description-static { opacity: 0; }
 .hero-description.typing-ready .hero-description-typing { position: absolute; inset: 0; display: block; pointer-events: none; }
-.hero-description-typing.is-typing::after {
+.hero-title-typing .is-typing::after, .hero-description-typing.is-typing::after {
   display: inline-block; width: 1px; height: 1em; margin-left: 0.16em;
   background: currentColor; content: ''; vertical-align: -0.12em;
   animation: typing-cursor 650ms step-end infinite;
