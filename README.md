@@ -38,8 +38,14 @@ make serve
 ## 파일 구성
 
 - `index.html`: 페이지 구조와 콘텐츠
-- `css/style.css`: 반응형 레이아웃과 테마
-- `js/main.js`: 메뉴, 스크롤, 테마, 양식, GitHub 저장소 표시
+- `css/style.css`: 책임별 스타일시트를 순서대로 불러오는 진입점
+- `css/tokens.css`, `base.css`, `layout.css`: 테마 토큰, 기본 요소, 공통 레이아웃
+- `css/header.css`, `hero.css`, `repositories.css`, `contact.css`, `footer.css`: 화면 영역별 스타일과 해당 반응형 규칙
+- `js/main.js`: DOM 초기화와 모듈 간 배선
+- `js/config.js`: 사용자 경험에 영향을 주는 조정값
+- `js/theme.js`, `navigation.js`, `hero-typing.js`: 전역 화면 상호작용
+- `js/repositories.js`: GitHub 요청, 필터, 저장소 카드 표시
+- `js/contact.js`, `validation.js`, `textarea-resize.js`: 문의 양식, 순수 입력 검사, 입력창 크기 조절
 - `images/`: 제품 이미지 자산
 
 GitHub Pages에 배포할 때 필요한 제품 파일은 `index.html`, `css/`, `js/`, `images/`입니다. `README.md`, `Makefile`, `.gitignore`는 개발과 저장소 사용을 위해 함께 관리하지만 배포 결과에는 필요하지 않습니다. 배포와 원격 Git 작업은 이 로컬 구현 범위에 포함되지 않습니다.

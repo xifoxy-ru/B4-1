@@ -18,7 +18,9 @@ check:
 	@test -f "$(ROOT_DIR)index.html"
 	@test -f "$(ROOT_DIR)css/style.css"
 	@test -f "$(ROOT_DIR)js/main.js"
-	@if command -v "$(NODE)" >/dev/null 2>&1; then "$(NODE)" --check "$(ROOT_DIR)js/main.js"; else echo "node is required for the JavaScript syntax check" >&2; exit 1; fi
+	@if command -v "$(NODE)" >/dev/null 2>&1; then \
+		for file in "$(ROOT_DIR)"js/*.js; do "$(NODE)" --input-type=module --check < "$$file" || exit 1; done; \
+	else echo "node is required for the JavaScript syntax check" >&2; exit 1; fi
 
 clean-cache:
 	@if [ "$(CLEAN)" = "1" ]; then \

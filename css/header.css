@@ -1,0 +1,68 @@
+.site-header {
+  position: sticky; z-index: 20; top: 0; min-height: var(--header-height);
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+  background: color-mix(in srgb, var(--page) 88%, transparent); backdrop-filter: blur(14px);
+}
+.header-inner { display: flex; min-height: var(--header-height); align-items: center; justify-content: space-between; gap: 0.75rem; }
+.site-logo { display: inline-flex; align-items: center; gap: 0.65rem; font-weight: 800; text-decoration: none; }
+.logo-mark {
+  display: grid; width: 2rem; height: 2rem; place-items: center; border-radius: 50%;
+  background: var(--accent); color: var(--surface); font-size: 0.85rem;
+}
+.primary-nav {
+  position: absolute; top: calc(100% + 0.5rem); right: 1rem; left: 1rem;
+  display: flex; visibility: hidden; flex-direction: column; align-items: center; gap: 0;
+  padding: 0.75rem; border: 1px solid var(--line); border-radius: var(--radius-medium);
+  background: var(--surface-raised); box-shadow: var(--shadow); opacity: 0;
+  transform: translateY(-0.5rem); transition: opacity 160ms ease, transform 160ms ease, visibility 160ms;
+}
+.primary-nav[data-open="true"] { visibility: visible; opacity: 1; transform: translateY(0); }
+.primary-nav a {
+  width: 100%; padding: 0.8rem 1rem; border-radius: 0.6rem; color: var(--muted);
+  font-size: 0.92rem; font-weight: 700; text-decoration: none;
+}
+.primary-nav a:hover { background: var(--accent-soft); color: var(--accent-strong); }
+.header-actions { display: flex; align-items: center; gap: 0.5rem; }
+.menu-toggle {
+  position: relative; display: block; width: 2.75rem; height: 2.75rem;
+  border: 1px solid var(--line); border-radius: 50%; background: var(--surface); color: var(--ink); cursor: pointer;
+}
+.menu-toggle span {
+  position: absolute; top: 50%; left: 50%; display: block; width: 1.05rem; height: 2px;
+  border-radius: 999px; background: currentColor; transform: translate(-50%, -50%);
+  transition: transform 160ms ease, opacity 160ms ease;
+}
+.menu-toggle span:first-child { transform: translate(-50%, calc(-50% - 0.32rem)); }
+.menu-toggle span:last-child { transform: translate(-50%, calc(-50% + 0.32rem)); }
+.menu-toggle[aria-expanded="true"] span:first-child { transform: translate(-50%, -50%) rotate(45deg); }
+.menu-toggle[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.menu-toggle[aria-expanded="true"] span:last-child { transform: translate(-50%, -50%) rotate(-45deg); }
+.site-header.is-scrolled { background: color-mix(in srgb, var(--surface) 94%, transparent); box-shadow: 0 0.4rem 1.5rem rgb(24 47 39 / 0.08); }
+.theme-toggle {
+  display: inline-flex; min-height: 2.75rem; align-items: center; gap: 0.5rem;
+  padding: 0.45rem 0.8rem; border: 1px solid var(--line); border-radius: 999px;
+  background: var(--surface); color: var(--ink); cursor: pointer;
+}
+.theme-toggle:hover { border-color: var(--accent); }
+.theme-toggle, .menu-toggle {
+  box-shadow: var(--shadow-small);
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, color 160ms ease, transform 160ms ease;
+}
+.theme-icon { color: var(--accent-strong); font-size: 1.2rem; line-height: 1; }
+.theme-label { font-size: 0.85rem; font-weight: 750; }
+@media (max-width: 20rem) {
+  .site-logo > span:last-child, .theme-label {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+  .theme-toggle { width: 2.75rem; justify-content: center; padding-inline: 0; }
+}
+@media (min-width: 48rem) {
+  .primary-nav {
+    position: static; display: flex; visibility: visible; flex-direction: row; gap: 1.4rem;
+    padding: 0; border: 0; background: transparent; box-shadow: none; opacity: 1;
+    transform: none; transition: none;
+  }
+  .primary-nav a { width: auto; padding: 0; }
+  .primary-nav a:hover { background: transparent; }
+  .menu-toggle { display: none; }
+}
