@@ -3,8 +3,13 @@ import { HASH_HEADER_GAP, HEADER_SCROLL_THRESHOLD, REVEAL_THRESHOLD, TOP_BUTTON_
 export const createNavigationController = ({ header, menuToggle, primaryNav, footer, topButton, reducedMotion }) => {
   const state = { menuOpen: false, headerActive: false, topVisible: false };
   const topButtonGap = topButton ? Number.parseFloat(window.getComputedStyle(topButton).bottom) || 16 : 16;
-  let initialHashTarget = null;
-  let initialHashCorrectionActive = false;
+  const navigationEntry = window.performance.getEntriesByType?.('navigation')?.[0];
+  const isHistoryTraversal = navigationEntry?.type === 'back_forward';
+  const targetId = window.location.hash.slice(1);
+  const initialHashTarget = targetId ? document.getElementById(targetId) : null;
+  let initialScrollCorrectionActive = !isHistoryTraversal;
+  let loadSettled = document.readyState === 'complete';
+  let apiSettled = false;
   let hashAlignmentFrame = 0;
   let previousScrollRestoration = null;
 
@@ -35,12 +40,17 @@ export const createNavigationController = ({ header, menuToggle, primaryNav, foo
       updateTopButtonPosition();
     }
   };
-  const cancelInitialHashCorrection = () => {
-    initialHashCorrectionActive = false;
+  const finishInitialScrollCorrection = () => {
+    initialScrollCorrectionActive = false;
     window.cancelAnimationFrame(hashAlignmentFrame);
     if (previousScrollRestoration) {
       window.history.scrollRestoration = previousScrollRestoration;
       previousScrollRestoration = null;
+    }
+  };
+  const cancelInitialScrollCorrection = () => {
+    if (initialScrollCorrectionActive) {
+      finishInitialScrollCorrection();
     }
   };
   const layoutTop = (element) => {
@@ -52,35 +62,37 @@ export const createNavigationController = ({ header, menuToggle, primaryNav, foo
     }
     return top;
   };
-  const alignInitialHashTarget = (complete = false) => {
-    if (!initialHashCorrectionActive || !initialHashTarget) {
+  const alignInitialScrollPosition = (complete = false) => {
+    if (!initialScrollCorrectionActive) {
       return;
     }
-    initialHashTarget.classList.add('is-visible');
+    initialHashTarget?.classList.add('is-visible');
     window.cancelAnimationFrame(hashAlignmentFrame);
     hashAlignmentFrame = window.requestAnimationFrame(() => {
       hashAlignmentFrame = window.requestAnimationFrame(() => {
-        if (!initialHashCorrectionActive || !initialHashTarget) {
+        if (!initialScrollCorrectionActive) {
           return;
         }
-        const headerOffset = (header?.getBoundingClientRect().height ?? 0) + HASH_HEADER_GAP;
-        const targetTop = layoutTop(initialHashTarget) - headerOffset;
+        const headerOffset = initialHashTarget
+          ? (header?.getBoundingClientRect().height ?? 0) + HASH_HEADER_GAP
+          : 0;
+        const targetTop = initialHashTarget ? layoutTop(initialHashTarget) - headerOffset : 0;
         const previousInlineBehavior = document.documentElement.style.scrollBehavior;
         document.documentElement.style.scrollBehavior = 'auto';
         window.scrollTo({ top: Math.max(0, targetTop), behavior: 'auto' });
         document.documentElement.style.scrollBehavior = previousInlineBehavior;
         updateScrollState();
         if (complete) {
-          cancelInitialHashCorrection();
+          finishInitialScrollCorrection();
         }
       });
     });
   };
+  const alignAfterInitialMilestone = () => {
+    alignInitialScrollPosition(loadSettled && apiSettled);
+  };
 
-  const targetId = window.location.hash.slice(1);
-  initialHashTarget = targetId ? document.getElementById(targetId) : null;
-  initialHashCorrectionActive = Boolean(initialHashTarget);
-  if (initialHashCorrectionActive) {
+  if (initialScrollCorrectionActive) {
     try {
       previousScrollRestoration = window.history.scrollRestoration;
       window.history.scrollRestoration = 'manual';
@@ -99,7 +111,7 @@ export const createNavigationController = ({ header, menuToggle, primaryNav, foo
   });
   document.addEventListener('keydown', (event) => {
     if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', 'Enter', ' '].includes(event.key)) {
-      cancelInitialHashCorrection();
+      cancelInitialScrollCorrection();
     }
     if (event.key === 'Escape' && state.menuOpen) {
       setMenuOpen(false);
@@ -112,7 +124,7 @@ export const createNavigationController = ({ header, menuToggle, primaryNav, foo
       const target = hash ? document.querySelector(hash) : null;
       if (target) {
         event.preventDefault();
-        cancelInitialHashCorrection();
+        cancelInitialScrollCorrection();
         setMenuOpen(false);
         target.scrollIntoView({ behavior: reducedMotion.matches ? 'auto' : 'smooth', block: 'start' });
         history.replaceState(null, '', hash);
@@ -121,11 +133,17 @@ export const createNavigationController = ({ header, menuToggle, primaryNav, foo
   });
   window.addEventListener('scroll', updateScrollState, { passive: true });
   window.addEventListener('resize', updateScrollState);
-  window.addEventListener('wheel', cancelInitialHashCorrection, { passive: true, once: true });
-  window.addEventListener('touchstart', cancelInitialHashCorrection, { passive: true, once: true });
-  window.addEventListener('pointerdown', cancelInitialHashCorrection, { passive: true, once: true });
+  window.addEventListener('wheel', cancelInitialScrollCorrection, { passive: true, once: true });
+  window.addEventListener('touchstart', cancelInitialScrollCorrection, { passive: true, once: true });
+  window.addEventListener('pointerdown', cancelInitialScrollCorrection, { passive: true, once: true });
+  window.addEventListener('pagehide', cancelInitialScrollCorrection, { once: true });
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+      cancelInitialScrollCorrection();
+    }
+  });
   topButton?.addEventListener('click', () => {
-    cancelInitialHashCorrection();
+    cancelInitialScrollCorrection();
     window.scrollTo({ top: 0, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
   });
 
@@ -142,9 +160,19 @@ export const createNavigationController = ({ header, menuToggle, primaryNav, foo
     }, { threshold: REVEAL_THRESHOLD });
     document.querySelectorAll('.reveal-target').forEach((section) => sectionObserver.observe(section));
   }
-  if (initialHashCorrectionActive) {
-    alignInitialHashTarget();
-    window.addEventListener('load', () => alignInitialHashTarget(), { once: true });
+  if (initialScrollCorrectionActive) {
+    alignInitialScrollPosition();
+    if (!loadSettled) {
+      window.addEventListener('load', () => {
+        loadSettled = true;
+        alignAfterInitialMilestone();
+      }, { once: true });
+    }
   }
-  return { completeInitialHashCorrection: () => alignInitialHashTarget(true) };
+  return {
+    completeInitialHashCorrection: () => {
+      apiSettled = true;
+      alignAfterInitialMilestone();
+    },
+  };
 };
