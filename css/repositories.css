@@ -6,19 +6,23 @@
 .github-heading { display: flex; min-width: 0; align-items: start; justify-content: space-between; gap: 1rem; }
 .github-status { margin-bottom: 0; color: var(--muted); }
 .repository-filter { display: flex; flex-wrap: wrap; align-items: center; gap: 0.55rem; margin: 1rem 0 0.75rem; }
-.repository-filter label { font-size: 0.9rem; font-weight: 800; }
-.repository-filter select {
-  max-width: 100%; padding: 0.45rem 2rem 0.45rem 0.65rem; border: 1px solid var(--line);
-  border-radius: var(--radius-small); background: var(--surface-raised); color: var(--ink); font: inherit;
+.repository-filter > span { font-size: 0.9rem; font-weight: 800; }
+.repository-language-buttons { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.repository-language-buttons button {
+  min-height: 2.5rem; padding: 0.4rem 0.75rem; border: 1px solid var(--line);
+  border-radius: 999px; background: var(--surface-raised); color: var(--ink); font: inherit;
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, color 160ms ease, transform 160ms ease;
 }
-.repository-filter select:disabled { cursor: not-allowed; opacity: 0.58; }
+.repository-language-buttons button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-strong); font-weight: 800; }
+.repository-language-buttons button:disabled { cursor: not-allowed; opacity: 0.58; }
 .retry-button {
   padding: 0.55rem 0.85rem; border: 1px solid var(--accent); border-radius: 999px;
   background: transparent; color: var(--accent-strong); font-weight: 800; cursor: pointer;
   box-shadow: var(--shadow-small);
   transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, color 160ms ease, transform 160ms ease;
 }
-.repo-grid { display: grid; min-width: 0; gap: 0.8rem; margin-top: 1.25rem; }
+.repo-grid { display: grid; min-width: 0; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: 0.8rem; margin-top: 1.25rem; }
 .repo-card {
   min-width: 0; padding: 1.1rem; border: 1px solid var(--line); border-radius: var(--radius-small);
   background: var(--surface-raised); box-shadow: var(--shadow-small);
@@ -35,8 +39,16 @@
   min-width: 5rem; min-height: 2.75rem; padding: 0.45rem 0.8rem;
   border: 1px solid var(--accent); border-radius: 999px; background: transparent;
   color: var(--accent-strong); font-weight: 800; cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, color 160ms ease, transform 160ms ease;
 }
 .repository-page-button:disabled { cursor: not-allowed; opacity: 0.5; }
+@media (hover: hover) {
+  .repository-language-buttons button:not(:disabled):hover,
+  .repository-page-button:not(:disabled):hover {
+    border-color: var(--accent-strong); background: var(--accent-soft);
+    box-shadow: var(--shadow-hover); transform: translateY(-2px);
+  }
+}
 .repository-page-status { min-width: 4rem; color: var(--muted); text-align: center; }
 .project-tag {
   margin-bottom: 0.5rem; color: var(--accent-strong) !important; font-size: 0.78rem;
@@ -50,4 +62,3 @@
   .repository-pagination { gap: 0.5rem; }
   .repository-page-button { min-width: 4.5rem; }
 }
-@media (min-width: 48rem) { .repo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

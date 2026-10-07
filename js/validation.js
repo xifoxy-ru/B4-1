@@ -27,6 +27,7 @@ export const isPracticalEmail = (value) => {
   return DOMAIN_SUFFIX_PATTERN.test(labels.at(-1));
 };
 
+
 export const fieldMessage = (name, value) => {
   if (!value.trim()) {
     const prompts = { name: '이름을', email: '이메일을', message: '메시지를' };

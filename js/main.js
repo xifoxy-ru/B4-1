@@ -7,6 +7,7 @@ import { createRepositoriesController } from './repositories.js';
 import { initializeTextareaResize } from './textarea-resize.js';
 import { createThemeController } from './theme.js';
 
+
 document.documentElement.classList.add('js');
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -45,7 +46,7 @@ const repositories = createRepositoriesController({
   status: document.querySelector('.github-status'),
   grid: document.querySelector('.repo-grid'),
   retry: document.querySelector('.retry-button'),
-  filter: document.querySelector('#repository-language-filter'),
+  filter: document.querySelector('.repository-language-buttons'),
   pagination: document.querySelector('.repository-pagination'),
   previousPage: document.querySelector('.repository-previous-button'),
   nextPage: document.querySelector('.repository-next-button'),

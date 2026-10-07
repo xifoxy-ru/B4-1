@@ -3,6 +3,10 @@ import { REPOSITORIES_PER_VIEW, REPOSITORY_API_PAGE_SIZE } from './config.js';
 const ALL_LANGUAGES = 'all';
 const NO_LANGUAGE = 'none';
 
+const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (character) => ({
+  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+})[character]);
+
 export const safeRepositoryUrl = (value) => {
   try {
     const url = new URL(value);
@@ -31,26 +35,16 @@ export const repositoryLanguageOptions = (repositories) => {
 
 const createRepositoryCard = (repository) => {
   const { name, description, html_url: repositoryUrl, language } = repository;
-  const article = document.createElement('article');
-  const title = document.createElement('h4');
-  const summary = document.createElement('p');
-  const meta = document.createElement('p');
   const safeUrl = safeRepositoryUrl(repositoryUrl);
-  article.className = 'repo-card';
-  title.textContent = typeof name === 'string' && name.trim() ? name : '이름 없는 저장소';
-  summary.textContent = typeof description === 'string' && description.trim() ? description : '설명이 없습니다.';
-  meta.className = 'repo-meta';
-  meta.textContent = `주요 언어: ${typeof language === 'string' && language.trim() ? language : '미지정'}`;
-  article.append(title, summary, meta);
-  if (safeUrl) {
-    const link = document.createElement('a');
-    link.href = safeUrl;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    link.textContent = 'GitHub에서 보기';
-    article.append(link);
-  }
-  return article;
+  const title = typeof name === 'string' && name.trim() ? name : '이름 없는 저장소';
+  const summary = typeof description === 'string' && description.trim() ? description : '설명이 없습니다.';
+  const languageLabel = typeof language === 'string' && language.trim() ? language : '미지정';
+  return `<article class="repo-card">
+    <h4>${escapeHtml(title)}</h4>
+    <p>${escapeHtml(summary)}</p>
+    <p class="repo-meta">주요 언어: ${escapeHtml(languageLabel)}</p>
+    ${safeUrl ? `<a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener noreferrer">GitHub에서 보기</a>` : ''}
+  </article>`;
 };
 
 const hasNextLink = (linkHeader) => typeof linkHeader === 'string'
@@ -62,6 +56,7 @@ const repositoryKey = (repository) => {
   }
   return `fallback:${repository?.html_url ?? ''}:${repository?.name ?? ''}`;
 };
+
 
 export const createRepositoriesController = ({
   username, status, grid, retry, filter, pagination, previousPage, nextPage, pageStatus, onSettled,
@@ -97,16 +92,19 @@ export const createRepositoriesController = ({
     if (!options.some(({ value }) => value === state.filter)) {
       state.filter = ALL_LANGUAGES;
     }
-    filter.replaceChildren(...options.map(({ value, label }) => {
-      const option = document.createElement('option');
-      option.value = value;
-      option.textContent = label;
-      return option;
-    }));
-    filter.value = state.filter;
-    filter.disabled = state.repositories.length === 0
+    const disabled = state.repositories.length === 0
       || state.phase === 'loading-initial'
       || state.phase === 'loading-more';
+    filter.setAttribute('aria-disabled', String(disabled));
+    filter.replaceChildren(...options.map(({ value, label }) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.language = value;
+      button.textContent = label;
+      button.setAttribute('aria-pressed', String(value === state.filter));
+      button.disabled = disabled;
+      return button;
+    }));
   };
 
   const renderPagination = (repositories) => {
@@ -166,7 +164,7 @@ export const createRepositoriesController = ({
       renderPagination(matchingRepositories);
       return;
     }
-    grid.append(...visibleRepositories.map(createRepositoryCard));
+    grid.innerHTML = visibleRepositories.map(createRepositoryCard).join('');
     renderPagination(matchingRepositories);
   };
 
@@ -244,10 +242,16 @@ export const createRepositoriesController = ({
       requestApiPage(1);
     }
   });
-  filter?.addEventListener('change', () => {
-    state.filter = filter.value;
+  filter?.addEventListener('click', (event) => {
+    const button = event.target instanceof Element ? event.target.closest('button[data-language]') : null;
+    if (!button || button.disabled || !filter.contains(button)) {
+      return;
+    }
+    state.filter = button.dataset.language;
     state.uiPage = 1;
     render();
+    [...filter.querySelectorAll('button[data-language]')]
+      .find(({ dataset }) => dataset.language === state.filter)?.focus({ preventScroll: true });
   });
   previousPage?.addEventListener('click', () => {
     if (state.phase !== 'loading-more' && state.uiPage > 1) {

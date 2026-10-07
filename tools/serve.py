@@ -1,4 +1,3 @@
-"""Run the local static server with a useful port-conflict message."""
 
 import errno
 import http.server

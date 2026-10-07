@@ -6,7 +6,7 @@
     <meta name="description" content="HTML, CSS, JavaScript로 만들고 GitHub에 기록하는 학습 포트폴리오입니다.">
     <title>웹을 배우고 기록하는 포트폴리오</title>
     <link rel="stylesheet" href="css/style.css">
-    <script src="js/main.js" type="module"></script>
+    <script src="js/main.js" type="module" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main-content">본문으로 건너뛰기</a>
@@ -117,10 +117,10 @@
               <button class="retry-button" type="button" hidden>다시 시도</button>
             </div>
             <div class="repository-filter">
-              <label for="repository-language-filter">불러온 저장소에서 언어 선택</label>
-              <select id="repository-language-filter" disabled>
-                <option value="all">전체</option>
-              </select>
+              <span id="repository-language-label">불러온 저장소에서 언어 선택</span>
+              <div class="repository-language-buttons" role="group" aria-labelledby="repository-language-label" aria-disabled="true">
+                <button type="button" data-language="all" aria-pressed="true" disabled>전체</button>
+              </div>
             </div>
             <p class="github-status" role="status" aria-live="polite"></p>
             <div class="repo-grid"></div>

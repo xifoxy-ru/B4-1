@@ -5,6 +5,9 @@ export const initializeTextareaResize = ({ textarea, corner }) => {
     return;
   }
   let resizeStart = null;
+  const heightSheet = new CSSStyleSheet();
+  document.adoptedStyleSheets = [...document.adoptedStyleSheets, heightSheet];
+  let renderedHeight = null;
   const heightLimits = () => {
     const styles = window.getComputedStyle(textarea);
     return {
@@ -15,7 +18,10 @@ export const initializeTextareaResize = ({ textarea, corner }) => {
   const renderHeight = (requestedHeight) => {
     const { minimum, maximum } = heightLimits();
     const height = Math.min(maximum, Math.max(minimum, requestedHeight));
-    textarea.style.height = `${height}px`;
+    if (height !== renderedHeight) {
+      heightSheet.replaceSync(`#contact-message { height: ${height}px; }`);
+      renderedHeight = height;
+    }
     corner.setAttribute('aria-valuemin', String(Math.round(minimum)));
     corner.setAttribute('aria-valuemax', String(Math.round(maximum)));
     corner.setAttribute('aria-valuenow', String(Math.round(height)));

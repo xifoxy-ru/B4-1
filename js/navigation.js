@@ -3,6 +3,10 @@ import { HASH_HEADER_GAP, HEADER_SCROLL_THRESHOLD, REVEAL_THRESHOLD, TOP_BUTTON_
 export const createNavigationController = ({ header, menuToggle, primaryNav, footer, topButton, reducedMotion }) => {
   const state = { menuOpen: false, headerActive: false, topVisible: false };
   const topButtonGap = topButton ? Number.parseFloat(window.getComputedStyle(topButton).bottom) || 16 : 16;
+  const topButtonSheet = topButton && footer ? new CSSStyleSheet() : null;
+  if (topButtonSheet) {
+    document.adoptedStyleSheets = [...document.adoptedStyleSheets, topButtonSheet];
+  }
   const navigationEntry = window.performance.getEntriesByType?.('navigation')?.[0];
   const isHistoryTraversal = navigationEntry?.type === 'back_forward';
   const targetId = window.location.hash.slice(1);
@@ -15,6 +19,7 @@ export const createNavigationController = ({ header, menuToggle, primaryNav, foo
 
   const renderMenu = () => {
     primaryNav?.setAttribute('data-open', String(state.menuOpen));
+    primaryNav?.classList.toggle('active', state.menuOpen);
     menuToggle?.setAttribute('aria-expanded', String(state.menuOpen));
     menuToggle?.setAttribute('aria-label', state.menuOpen ? '메뉴 닫기' : '메뉴 열기');
   };
@@ -29,11 +34,12 @@ export const createNavigationController = ({ header, menuToggle, primaryNav, foo
     const footerTop = footer.getBoundingClientRect().top;
     const requiredBottom = window.innerHeight - footerTop + topButtonGap;
     const maximumBottom = Math.max(topButtonGap, window.innerHeight - topButton.offsetHeight - topButtonGap);
-    topButton.style.bottom = `${Math.min(Math.max(topButtonGap, requiredBottom), maximumBottom)}px`;
+    const bottom = Math.min(Math.max(topButtonGap, requiredBottom), maximumBottom);
+    topButtonSheet.replaceSync(`.top-button { bottom: ${bottom}px; }`);
   };
   const updateScrollState = () => {
-    state.headerActive = window.scrollY > HEADER_SCROLL_THRESHOLD;
-    state.topVisible = window.scrollY > TOP_BUTTON_SCROLL_THRESHOLD;
+    state.headerActive = window.scrollY >= HEADER_SCROLL_THRESHOLD;
+    state.topVisible = window.scrollY >= TOP_BUTTON_SCROLL_THRESHOLD;
     header?.classList.toggle('is-scrolled', state.headerActive);
     if (topButton) {
       topButton.hidden = !state.topVisible;
@@ -77,10 +83,9 @@ export const createNavigationController = ({ header, menuToggle, primaryNav, foo
           ? (header?.getBoundingClientRect().height ?? 0) + HASH_HEADER_GAP
           : 0;
         const targetTop = initialHashTarget ? layoutTop(initialHashTarget) - headerOffset : 0;
-        const previousInlineBehavior = document.documentElement.style.scrollBehavior;
-        document.documentElement.style.scrollBehavior = 'auto';
+        document.documentElement.classList.add('is-initial-scroll-aligning');
         window.scrollTo({ top: Math.max(0, targetTop), behavior: 'auto' });
-        document.documentElement.style.scrollBehavior = previousInlineBehavior;
+        document.documentElement.classList.remove('is-initial-scroll-aligning');
         updateScrollState();
         if (complete) {
           finishInitialScrollCorrection();

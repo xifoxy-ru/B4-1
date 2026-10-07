@@ -1,6 +1,6 @@
-.header-inner, main, .site-footer { width: min(100% - 2rem, var(--content-width)); margin-inline: auto; }
+.header-inner, main, .site-footer { width: min(100% - var(--space-4), var(--content-width)); margin-inline: auto; }
 .section { padding-block: 4.75rem; border-top: 1px solid var(--line); }
-.section-heading { margin-bottom: 2rem; }
+.section-heading { margin-bottom: var(--space-4); }
 .content-panel, .card {
   border: 1px solid var(--line); border-radius: var(--radius-medium);
   background: var(--surface); box-shadow: var(--shadow);
@@ -11,7 +11,7 @@
 .about-panel img { width: min(100%, 14rem); height: auto; margin-inline: auto; border-radius: var(--radius-medium); }
 .content-panel p, .card p { color: var(--muted); }
 .content-panel p:last-child, .card p:last-child { margin-bottom: 0; }
-.card-grid { display: grid; gap: 1rem; }
+.card-grid { display: grid; gap: var(--space-2); }
 .card { padding: 1.5rem; }
 .card-number { margin-bottom: 2.5rem; color: var(--accent-strong) !important; font-size: 0.82rem; font-weight: 900; }
 .top-button {
