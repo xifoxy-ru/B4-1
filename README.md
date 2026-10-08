@@ -20,7 +20,7 @@ HTML, CSS, JavaScript를 배우며 직접 만든 화면과 상호작용을 기�
 
 브라우저에서 사용하는 공개 식별자는 `js/config.js`의 서비스 ID `service_5e0gjwa`, 템플릿 ID `template_x2m8fzq`, 공개 키 `I9tZcMR1i6mLTUXj8`입니다. 이 값들은 EmailJS의 클라이언트 연동용 공개 값이며 비밀 키나 Private Key를 코드에 넣지 않습니다. 전송 형식은 [EmailJS REST API 공식 문서](https://www.emailjs.com/docs/rest-api/send/)를 따릅니다.
 
-EmailJS 대시보드의 템플릿 변수는 정확히 `name`, `email`, `message`를 사용합니다. 수신자는 템플릿의 To Email에 `xifoxy.ru@gmail.com`, 발신자는 연결된 Gmail 서비스의 기본값, Reply-To는 `{{email}}`로 대시보드에서 설정합니다. 허용 도메인도 실제 배포 주소에 맞게 EmailJS 대시보드에서 별도로 설정해야 합니다. 저장소에서는 이 외부 설정을 확인하거나 변경하지 않았으며, 실제 이메일 전송 점검도 아직 수행하지 않았습니다.
+EmailJS 대시보드의 템플릿 변수는 정확히 `name`, `email`, `message`를 사용합니다. 수신자는 템플릿의 To Email에 `xifoxy.ru@gmail.com`, 발신자는 연결된 Gmail 서비스의 기본값, Reply-To는 `{{email}}`로 대시보드에서 설정합니다. 허용 도메인도 실제 배포 주소에 맞게 EmailJS 대시보드에서 별도로 설정해야 합니다. 실제 이메일 도착은 사용자가 확인했습니다. 외부 서비스 설정은 이 문서 작업에서 독립적으로 감사하지 않았습니다.
 
 메시지 입력창은 최소 `8rem`, 최대 `40rem` 높이에서 세로 크기를 조절할 수 있습니다. 브라우저의 일반적인 우하단 모양을 유지하면서 잡을 수 있는 코너 영역을 약 26px로 넓혔습니다. 코너는 드래그하거나 `↑`/`↓` 키로 16px씩, `Shift`와 함께 48px씩 조절할 수 있습니다. `Home`은 최소 높이, `End`는 최대 높이로 이동합니다.
 
@@ -42,17 +42,75 @@ make serve
 
 브라우저에서 `http://localhost:4173`을 엽니다. 기본 점검은 `make check`로 실행합니다.
 
-## 파일 구성
+## 파일 구성과 관계
 
-- `index.html`: 페이지 구조와 콘텐츠
-- `css/style.css`: 책임별 스타일시트를 순서대로 불러오는 진입점
-- `css/tokens.css`, `base.css`, `layout.css`: 테마 토큰, 기본 요소, 공통 레이아웃
-- `css/header.css`, `hero.css`, `repositories.css`, `contact.css`, `footer.css`: 화면 영역별 스타일과 해당 반응형 규칙
-- `js/main.js`: DOM 초기화와 모듈 간 배선
-- `js/config.js`: 사용자 경험 조정값과 EmailJS 공개 식별자
-- `js/theme.js`, `navigation.js`, `hero-typing.js`: 전역 화면 상호작용
-- `js/repositories.js`: GitHub 요청, 필터, 저장소 카드 표시
-- `js/contact.js`, `email-service.js`, `validation.js`, `textarea-resize.js`: 문의 양식 상태, EmailJS 전송, 순수 입력 검사, 입력창 크기 조절
-- `images/`: 제품 이미지 자산
+`index.html`은 페이지 구조와 콘텐츠를 담고 `css/style.css` 및 `js/main.js`를 읽습니다. `images/`에는 제품 이미지 자산이 있습니다.
 
-GitHub Pages에 배포할 때 필요한 제품 파일은 `index.html`, `css/`, `js/`, `images/`입니다. `README.md`, `Makefile`, `.gitignore`는 개발과 저장소 사용을 위해 함께 관리하지만 배포 결과에는 필요하지 않습니다. 배포와 원격 Git 작업은 이 로컬 구현 범위에 포함되지 않습니다.
+### JavaScript
+
+화살표는 왼쪽 모듈이 오른쪽 모듈을 `import`한다는 뜻입니다. 점선은 import가 아니라 `main.js`가 전달한 완료 콜백의 실행 관계입니다.
+
+```mermaid
+flowchart LR
+  main["main.js"] --> contact["contact.js"]
+  main --> hero["hero-typing.js"]
+  main --> navigation["navigation.js"]
+  main --> repositories["repositories.js"]
+  main --> resize["textarea-resize.js"]
+  main --> theme["theme.js"]
+  contact --> validation["validation.js"]
+  contact --> email["email-service.js"]
+  email --> config["config.js"]
+  hero --> config
+  navigation --> config
+  repositories --> config
+  resize --> config
+  repositories -. "첫 요청 완료 시 전달받은 콜백 호출" .-> navigation
+```
+
+| 파일 | 역할 |
+| --- | --- |
+| `main.js` | DOM 요소를 찾아 각 기능을 초기화하고 모듈을 연결하는 진입점 |
+| `config.js` | 타이핑·스크롤·입력창 수치, GitHub 페이지 크기, EmailJS 공개 식별자와 요청 제한 시간 제공 |
+| `theme.js` | 테마 선택과 저장 |
+| `navigation.js` | 메뉴·스크롤·섹션 표시와 첫 해시 위치 보정 |
+| `hero-typing.js` | 제목과 소개의 타이핑 표시 |
+| `repositories.js` | GitHub 응답과 화면 상태·필터·카드·페이지 이동 관리 |
+| `contact.js` | 문의 양식 상태와 제출 관리 |
+| `validation.js` | 문의 입력값 검사 |
+| `email-service.js` | EmailJS 요청 전송 |
+| `textarea-resize.js` | 메시지 입력창 크기 조절 |
+
+`main.js`는 `navigation.js`가 반환한 `completeInitialHashCorrection`을 `repositories.js`의 `onSettled`로 전달합니다. 저장소의 첫 요청이 성공하거나 실패해 끝나면 그 콜백으로 초기 해시 위치 보정을 마무리합니다.
+
+### CSS
+
+화살표는 `style.css`가 각 파일을 `@import`한다는 뜻입니다. 번호는 실제 선언 순서입니다. 앞 파일의 규칙과 뒤 파일의 규칙은 함께 적용되고, 같은 우선순위로 충돌하면 뒤에 읽힌 선언이 이깁니다.
+
+```mermaid
+flowchart LR
+  style["style.css"] --> tokens["1. tokens.css"]
+  style --> base["2. base.css"]
+  style --> layout["3. layout.css"]
+  style --> header["4. header.css"]
+  style --> hero["5. hero.css"]
+  style --> repositories["6. repositories.css"]
+  style --> contact["7. contact.css"]
+  style --> footer["8. footer.css"]
+```
+
+| 파일 | 역할 |
+| --- | --- |
+| `style.css` | 8개 파일을 순서대로 불러오고 움직임 감소 설정의 공통 규칙 적용 |
+| `tokens.css` | 밝은·어두운 테마의 색, 간격, 글꼴, 크기 변수 정의 |
+| `base.css` | 기본 요소, 공통 버튼과 키보드 초점 스타일 |
+| `layout.css` | 섹션·카드·공통 폭·반응형 배치와 공통 hover·등장 효과 |
+| `header.css` | 머리글과 메뉴의 영역별 스타일 |
+| `hero.css` | 첫 화면과 타이핑 표시의 영역별 스타일 |
+| `repositories.css` | 저장소 카드·필터·페이지 이동의 영역별 스타일 |
+| `contact.css` | 문의 양식과 입력창의 영역별 스타일 |
+| `footer.css` | 꼬리말의 영역별 스타일 |
+
+화면 영역 규칙은 `tokens.css`의 변수를 `var(...)`로 사용해 테마 색과 공통 수치를 공유합니다. 영역 파일이 공통 규칙을 조정할 때는 선택자 우선순위와 위 import 순서가 함께 결과를 결정합니다.
+
+GitHub Pages에 배포할 때 필요한 제품 파일은 `index.html`, `css/`, `js/`, `images/`입니다. `README.md`, `Makefile`, `.gitignore`는 개발과 저장소 사용을 위해 함께 관리하지만 배포 결과에는 필요하지 않습니다.
