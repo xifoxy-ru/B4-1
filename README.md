@@ -89,14 +89,14 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  style["style.css"] --> tokens["1. tokens.css"]
-  style --> base["2. base.css"]
-  style --> layout["3. layout.css"]
-  style --> header["4. header.css"]
-  style --> hero["5. hero.css"]
-  style --> repositories["6. repositories.css"]
-  style --> contact["7. contact.css"]
-  style --> footer["8. footer.css"]
+  cssEntry["style.css"] --> tokens["1. tokens.css"]
+  cssEntry --> base["2. base.css"]
+  cssEntry --> layout["3. layout.css"]
+  cssEntry --> header["4. header.css"]
+  cssEntry --> hero["5. hero.css"]
+  cssEntry --> repositories["6. repositories.css"]
+  cssEntry --> contact["7. contact.css"]
+  cssEntry --> footer["8. footer.css"]
 ```
 
 | 파일 | 역할 |
