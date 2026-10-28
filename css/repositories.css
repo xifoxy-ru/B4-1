@@ -3,13 +3,14 @@
   min-width: 0; padding: clamp(1.4rem, 5vw, 2.5rem); border: 1px solid var(--line);
   border-radius: var(--radius-medium); background: var(--surface); box-shadow: var(--shadow);
 }
-.github-heading { display: flex; min-width: 0; align-items: start; justify-content: space-between; gap: 1rem; }
+.github-heading { display: flex; min-width: 0; align-items: start; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+.github-heading > div { min-width: 0; }
 .github-status { margin-bottom: 0; color: var(--muted); }
 .repository-filter { display: flex; flex-wrap: wrap; align-items: center; gap: 0.55rem; margin: 1rem 0 0.75rem; }
 .repository-filter > span { font-size: 0.9rem; font-weight: 800; }
 .repository-language-buttons { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .repository-language-buttons button {
-  min-height: 2.5rem; padding: 0.4rem 0.75rem; border: 1px solid var(--line);
+  min-height: 2.75rem; max-width: 100%; overflow-wrap: anywhere; padding: 0.4rem 0.75rem; border: 1px solid var(--line);
   border-radius: 999px; background: var(--surface-raised); color: var(--ink); font: inherit;
   cursor: pointer;
   transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, color 160ms ease, transform 160ms ease;
@@ -54,11 +55,10 @@
   margin-bottom: 0.5rem; color: var(--accent-strong) !important; font-size: 0.78rem;
   font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
 }
+.project-tag, .repo-card h4, .repo-card p, .repo-card a { overflow-wrap: anywhere; }
 @media (max-width: 20rem) {
   .github-panel { padding: 1rem; }
   .github-heading { gap: 0.5rem; }
-  .github-heading > div { min-width: 0; }
-  .project-tag, .repo-card h4, .repo-card a { overflow-wrap: anywhere; }
   .repository-pagination { gap: 0.5rem; }
   .repository-page-button { min-width: 4.5rem; }
 }

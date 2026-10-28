@@ -35,11 +35,13 @@ export const sendContactEmail = async (
       signal: controller.signal,
     });
   } catch (error) {
+
     if (controller.signal.aborted) {
       throw new EmailSendError('timeout');
     }
     throw new EmailSendError('network');
   } finally {
+
     clearTimeout(timeoutId);
   }
 

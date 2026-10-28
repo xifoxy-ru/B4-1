@@ -12,6 +12,7 @@ def main() -> int:
             ("", port), http.server.SimpleHTTPRequestHandler
         )
     except OSError as error:
+
         if error.errno != errno.EADDRINUSE:
             raise
 

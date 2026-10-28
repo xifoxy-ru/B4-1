@@ -22,16 +22,15 @@
 }
 @keyframes typing-cursor { 50% { opacity: 0; } }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 0.8rem; }
-.profile-placeholder { position: relative; width: clamp(8.5rem, 58vw, 15rem); aspect-ratio: 1; margin-inline: auto; }
+.profile-placeholder { position: relative; width: clamp(11.6rem, 58vw, 15rem); aspect-ratio: 1; margin-inline: auto; }
 .shape { position: absolute; display: grid; place-items: center; border-radius: 42% 58% 57% 43% / 48% 44% 56% 52%; }
 .shape-back { inset: 10% 5% 5% 10%; border: 2px solid var(--highlight); transform: rotate(12deg); }
 .shape-middle { inset: 0 10% 10% 0; background: var(--accent-soft); transform: rotate(-8deg); }
 .shape-front {
   inset: 20%; background: var(--accent); box-shadow: var(--shadow); color: var(--surface);
-  font-size: clamp(2.75rem, 17vw, 5.5rem); font-weight: 900; line-height: 1;
+  font-size: clamp(3.4rem, 17vw, 5.5rem); font-weight: 900; line-height: 1;
 }
-@media (min-width: 48rem) {
-  .hero { grid-template-columns: minmax(0, 1.35fr) minmax(15rem, 0.65fr); padding-block: 6rem; }
-  .profile-placeholder { width: min(28vw, 19rem); }
+@media (min-width: 72rem) {
+  .hero { grid-template-columns: minmax(0, 1.5fr) minmax(15rem, 0.65fr); gap: 3rem; padding-block: 7rem; }
+  .profile-placeholder { width: min(100%, 19rem); }
 }
-@media (min-width: 64rem) { .hero { gap: 5rem; padding-block: 7rem; } }
