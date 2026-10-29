@@ -1,5 +1,7 @@
 # B4-1 Portfolio
 
+[배포 사이트 바로가기](https://xifoxy-ru.github.io/B4-1/)
+
 모바일 우선으로 만든 학습용 개인 포트폴리오입니다. 별도 빌드 과정이나 외부 런타임 라이브러리 없이 HTML, CSS, JavaScript만 사용합니다.
 
 HTML, CSS, JavaScript를 배우며 직접 만든 화면과 상호작용을 기록합니다. 공개 저장소 영역은 사용자가 지정한 GitHub 계정 `xifoxy-ru`를 사용하며, 확인되지 않은 이름이나 경력·연락처 정보는 표시하지 않습니다.
